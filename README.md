@@ -125,3 +125,24 @@ if (client_sock < 0) {
 
 std::cout << "Connexion acceptée\n";
 ```
+
+### Permettre la connection non bloquante des clients
+
+Fonction makeSocketNonBlock et explication:
+``` c++
+void makeSocketNonBlock(int socket) {
+    int flags = fcntl(socket, F_GETFL, 0);
+    fcntl(socket, F_SETFL, flags | O_NONBLOCK);
+}
+```
+1. **int flags = fcntl(socket, F_GETFL, 0);** </br>
+* La fonction *fcntl* permet de manipuler des file descriptors. </br>
+* *socket*: le descripteur de fichier de la socket; </br>
+* **F_GETFL**: permet de recuperrer les flags associés au socket. </br>
+* 0: valeur par defaut car F_GETFL n'utilise pas ce parametre. </br>
+2. fcntl(socket, F_SETFL, flags | O_NONBLOCK); </br>
+ * *socket*: le descripteur de fichier de la socket; </br>
+ * **F_SETFL**: permet de d'attribuer des flags au socket. </br>
+ * **O_NONBLOCK**: Flag existant qui indique que le socket doit fonctionner en mode non-bloquant . </br>
+ * **flags | O_NONBLOCK**: On ajoute aux flags de la socket, le flag O_NONBLOCK s'il n'y est pas. </br>
+
