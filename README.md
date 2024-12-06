@@ -20,9 +20,8 @@ https://man7.org/linux/man-pages/man2/bind.2.html</br>
 
 https://man7.org/linux/man-pages/man2/listen.2.html </br>
 **listen(int sockfd, int backlog)**: </br>
-```
-
-```
+le socket *sockfd* est marqué comme passif, </br>
+il sera utilisé pour accepter des connections entrantes avec <a href="https://man7.org/linux/man-pages/man2/accept.2.html">accept(2)</a>.
 
 
 https://linux.die.net/man/2/close </br>
