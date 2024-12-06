@@ -14,9 +14,13 @@ https://man7.org/linux/man-pages/man2/socket.2.html </br>
 	Retourne un descripteur de fichier qui reference cet endpoint
 	 </br>*domain*: défini la famille de protocole a utiliser (AF_INET: IPV4, AF_INET6: IPV6) </br>*type*: indique le type de socket utilisé (SOCK_STREAM: TCP) </br>*protocol*: 0
 
+https://linux.die.net/man/3/htons</br>
+**htons(uint16_t hostshort)**:</br>
+	Convertit l'entier unsigned short int hostshort de l'ordre des octets de l'hôte à l'ordre des octets du réseau.
+
 https://man7.org/linux/man-pages/man2/bind.2.html</br>
 **bind(int sockfd, const struct sockaddr \*addr, socklen_t addrlen)** :</br>
-	permet d'assigner l'adresse specifée par *addr* à la socket réferencée par *sockfd* le descripteur de fichier de la socket. *addrlen* spécifie la taille en bits, de l'adresse de la structure pointée par *addr*
+	Permet d'assigner l'adresse specifée par *addr* à la socket réferencée par *sockfd* le descripteur de fichier de la socket. *addrlen* spécifie la taille en bits, de l'adresse de la structure pointée par *addr*
 
 https://man7.org/linux/man-pages/man2/listen.2.html </br>
 **listen(int sockfd, int backlog)**: </br>
@@ -33,7 +37,8 @@ https://man7.org/linux/man-pages/man2/getsockname.2.html </br>
 **getsockname(int sockfd, struct sockaddr *restriction addr, socklen_t *restriction addrlen)**:</br>
 	Stocke l'adresse a laquelle est lié *sockfd* dans *addr*.
 	</br>*addrlen*: indique la quantité d'espace (en octets) pointé par *addr*
- 
+
+
 setsockopt</br>
 getprotobyname</br>
 gethostbyname</br>
@@ -41,7 +46,7 @@ getaddrinfo</br>
 freeaddrinfo</br>
 connect</br>
 accept</br>
-htons</br>
+
 htonl</br>
 ntohs</br>
 ntohl</br>
