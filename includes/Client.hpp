@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/07 11:38:27 by nfradet          ###   ########.fr       */
+/*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
+/*   Updated: 2024/12/07 11:51:13 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,27 @@
 
 #include "includes.hpp"
 
-
-class Client;
-
-class Server
+class Client
 {
 private:
-	int 					serverFd;
-	std::string 			passWord;
-	unsigned int 			port;
-	std::vector<pollfd> 	pollFds;
-	std::map<int, Client*>	clients;
-
-	bool					isRunning;
-	
-	void createSocket(void);
-	void handleEvent(size_t &i);
-	void handleClientMessage(Client *client, std::string const &message);
+	int 		fd;
+	std::string	nickName;
+	std::string	userName;
+	bool		isAuth;
 
 public:
-	Server();
-	Server(int _port, std::string _passWord);
-	~Server();
+	Client();
+	Client(int fd);
+	~Client();
 
-	void run();
+	int getFd();
+	std::string getNickName();
+	std::string getUserName();
+	bool getIsAuth();
 
+	void setFd(int _fd);
+	void setNickName(std::string _nickName);
+	void setUserName(std::string _userName);
+	void setIsAuth(bool _isAuth);
 };
+

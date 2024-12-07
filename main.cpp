@@ -14,6 +14,7 @@ void checkInput(int ac, char **av) {
 int main(int argc, char **argv) {
 	try {
 		checkInput(argc, argv);
+		Server serv(std::atoi(argv[1]), argv[2]);
 	}
 	catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;

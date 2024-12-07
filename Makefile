@@ -13,7 +13,9 @@ OBJ_DIR	=	obj/
 
 # .cpp and .o files
 
-SRC		 =		main.cpp
+SRC		 =		main.cpp 	\
+				Server.cpp	\
+				Client.cpp
 
 OBJ		 =	$(SRC:%.cpp=$(OBJ_DIR)%.o)
 
