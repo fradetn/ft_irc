@@ -15,7 +15,8 @@ OBJ_DIR	=	obj/
 
 SRC		 =		main.cpp 	\
 				Server.cpp	\
-				Client.cpp
+				Client.cpp	\
+				Parser.cpp
 
 OBJ		 =	$(SRC:%.cpp=$(OBJ_DIR)%.o)
 

@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/07 16:40:19 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/08 19:47:44 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,19 @@ Server::~Server() {}
 void makeSocketNonBlock(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
 	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+}
+
+void Server::parseMess(std::string message) {
+	size_t		pos = 0;
+	std::string	res;
+	Parser		parsed;
+
+	while (getStringUntil(message, res, '\n', pos)) {
+		if (res != "") {
+			parsed.parseMessage(res);
+			this->parsedMessages.push_back(parsed);
+		}
+	}
 }
 
 void Server::createSocket(void) {
@@ -72,11 +85,12 @@ void Server::run() {
 			throw std::runtime_error("Error: poll failed");
 		}
 		for (size_t i = 0; i < this->pollFds.size(); i++) {
-			if (this->pollFds[i].revents != 0) {
-				std::cout << "event happening: " << this->pollFds[i].revents << std::endl;
+			if (this->pollFds[i].revents == 0) 
+				continue;
+			if ((this->pollFds[i].revents & POLLIN) == POLLIN) {
+				std::cout << "event happening on: " << this->pollFds[i].revents << std::endl;
 				this->handleEvent(i);
 				std::cout << std::endl;
-
 			}
 		}
 	}
@@ -131,29 +145,64 @@ bool getStringUntil(const std::string& input, std::string& result, char delimite
 	return (true);
 }
 
+Parser	Server::searchForCmd(std::string cmd) {
+	parserIt it;
+	for (it = this->parsedMessages.begin(); it != this->parsedMessages.end(); ++it) {
+		if (it->command == cmd)
+			return (*it);
+	}
+	return (*it);
+}
+
 void Server::handleClientMessage(Client *client, std::string const &message) {
-	std::cout << "message: '"<< message << "'" << std::endl;
-	size_t ind;
-	size_t i = 0;
+	this->parseMess(message);
+	(void) client;
 	if (client->getIsAuth() == false) {
-		ind = message.find("PASS ");
-		std::cout << "index of PASS: " << ind << std::endl;
-		if (ind >= 0) {
-			std::string pass;
-			getStringUntil(message.substr(ind + 5), pass, '\n', i);
-			std::cout << "pass provided: '"<< pass << "'" << std::endl;
-			if (pass == this->passWord) {
+		Parser pass = this->searchForCmd("PASS");
+		if (pass.params[0] == this->passWord) {
 				client->setIsAuth(true);
 				std::cout << "Client authentificated: " << client->getFd() << std::endl;
-			}
-			else {
-				std::cout << "Wrong password from: " << client->getFd() << std::endl;
-				close(client->getFd());
-			}
+		}
+		else {
+			std::cout << "Wrong password from: " << client->getFd() << std::endl;
+			close(client->getFd());
 		}
 	}
 	else {
 		// Gérer les commandes
-		
 	}
+
+
+
+	// ----------------------------------- //
+	// size_t ind;
+	// size_t i = 0;
+	// if (client->getIsAuth() == false) {
+	// 	ind = message.find("PASS ");
+	// 	std::cout << "index of PASS: " << ind << std::endl;
+	// 	if (ind != std::string::npos) {
+	// 		std::string pass;
+	// 		getStringUntil(message.substr(ind + 5), pass, '\n', i);
+	// 		std::cout << "pass provided: '"<< pass << "'" << std::endl;
+	// 		if (pass == this->passWord) {
+	// 			client->setIsAuth(true);
+	// 			std::cout << "Client authentificated: " << client->getFd() << std::endl;
+	// 		}
+	// 		else {
+	// 			std::cout << "Wrong password from: " << client->getFd() << std::endl;
+	// 			close(client->getFd());
+	// 		}
+	// 	}
+	// }
+	// else {
+	// 	// Gérer les commandes
+	// 	std::string cmd;
+	// 	ind = message.find("NICK :");
+	// 	if (ind != std::string::npos)
+	// 		getStringUntil(message.substr(ind + 6), cmd, '\n', i);
+	// 	ind = message.find("JOIN ");
+	// 	if (ind != std::string::npos) 
+	// 		getStringUntil(message.substr(ind + 5), cmd, '\n', i);
+	// 	std::cout << "cmd provided: '"<< cmd << "'" << std::endl;
+	// }
 }
