@@ -6,6 +6,29 @@
   * https://www.mirc.com/      : Client Windows très connu. </br>
  </br>
 
+## Utilisation avec hexchat
+
+### Commandes utilisateurs
+
+* PASS : Usage: /pass \<password>, permet de se connecter au serveur avec le mot de passe
+* NICK : Usage: /nick \<nickname>, défini votre nickname
+* USER : /user \<username> \<mode> \<unused> :\<realname>, Commande pour définir un identifiant utilisateur
+* QUIT : Usage: /quit [\<reason>], Déconnecte du serveur actuel
+* JOIN : Usage: /join \<channel>, Rejoins le channel
+* PRIVMSG  : Usage: /msg \<nick> \<message>, Envoie un message privé, message "."  à envoyer au dernier pseudo ou préfixe (avec "=" pour dcc chat)
+
+## Commandes opérateurs
+
+*  KICK   : Usage: /kick \<nick> [reason], Ejecter un client du channel
+*  INVITE : Usage: /invite \<nick> [\<channel>], Inviter un client au channel, par défaut le channel actuel (needs chanop)
+*  TOPIC  : Usage: /topic [\<topic>], Modifie le thème du channel s'il est donné, l'affiche sinon 
+*  MODE   : Usage: /mode \<channel> \<+|->\<modes> [\<params>], Changer le mode du channel
+   * i : Définir/supprimer le canal sur invitation uniquement
+   * t : Définir/supprimer les restrictions de la commande TOPIC pour les opérateurs de canaux
+   * k : Définir/supprimer la clé du canal (mot de passe)
+   * o : Donner/retirer le privilège de l’opérateur de canal
+   * l : Définir/supprimer la limite d’utilisateurs pour le canal
+
 ## Quelques fonctions utiles
 
 https://man7.org/linux/man-pages/man2/socket.2.html </br>
