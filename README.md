@@ -31,6 +31,8 @@
 
 ## Quelques fonctions utiles
 
+### Pour les sockets
+
 https://man7.org/linux/man-pages/man2/socket.2.html </br>
 **socket(int domain, int type, int protocol)**: </br>
 	</t>Créer un endpoint pour la communication.
@@ -50,16 +52,29 @@ https://man7.org/linux/man-pages/man2/listen.2.html </br>
 le socket *sockfd* est marqué comme passif, </br>
 il sera utilisé pour accepter des connections entrantes avec <a href="https://man7.org/linux/man-pages/man2/accept.2.html">accept(2)</a>.
 
+https://man7.org/linux/man-pages/man2/accept.2.html </br>
+**accept(int sockfd, struct sockaddr \*_Nullable restrict addr, socklen_t \*_Nullable restrict addrlen)** :</br>
+The accept() system call is used with connection-based socket
+       types (SOCK_STREAM).  It extracts the first
+       connection request on the queue of pending connections for the
+       listening socket, sockfd, creates a new connected socket, and
+       returns a new file descriptor referring to that socket.
 
-https://linux.die.net/man/2/close </br>
-**close(int fd)**: </br>
-  ferme un descripteur de fichier 
-	Retourne Zero en cas de succes, -1 s'il echoue en instanciant errno correctement.
+https://man7.org/linux/man-pages/man2/poll.2.html </br>
+**poll(struct pollfd \*fds, nfds_t nfds, int timeout)** :</br>
+poll() performs a similar task to <a href="https://man7.org/linux/man-pages/man2/select.2.html">select(2)</a></br> 
+it waits for one of a set of file descriptors to become ready to perform I/O
 
 https://man7.org/linux/man-pages/man2/getsockname.2.html </br>
 **getsockname(int sockfd, struct sockaddr *restriction addr, socklen_t *restriction addrlen)**:</br>
 	Stocke l'adresse a laquelle est lié *sockfd* dans *addr*.
 	</br>*addrlen*: indique la quantité d'espace (en octets) pointé par *addr*
+
+
+https://linux.die.net/man/2/close </br>
+**close(int fd)**: </br>
+  ferme un descripteur de fichier 
+	Retourne Zero en cas de succes, -1 s'il echoue en instanciant errno correctement.
 
 
 setsockopt</br>
@@ -68,11 +83,7 @@ gethostbyname</br>
 getaddrinfo</br>
 freeaddrinfo</br>
 connect</br>
-accept</br>
-
-htonl</br>
 ntohs</br>
-ntohl</br>
 inet_addr</br>
 inet_ntoa</br>
 send</br>
@@ -82,7 +93,6 @@ sigaction</br>
 lseek</br>
 fstat</br>
 fcntl</br>
-poll</br>
 
 ## Étapes de base pour utiliser des sockets en C++ (coté serveur)
 
