@@ -6,17 +6,18 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/08 19:27:58 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/09 12:22:07 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef SERVER_HPP
+# define SERVER_HPP
+
 
 #include "includes.hpp"
 
 class Client;
 class Parser;
-
 
 class Server
 {
@@ -31,11 +32,13 @@ private:
 
 	bool					isRunning;
 	
+	parserIt	searchForCmd(std::string cmd);
+	void	parseMess(std::string message);
+
 	void	createSocket(void);
 	void	handleEvent(size_t &i);
-	Parser	searchForCmd(std::string cmd);
-	void	parseMess(std::string message);
 	void	handleClientMessage(Client *client, std::string const &message);
+	void	handleCommands();
 
 public:
 
@@ -46,3 +49,5 @@ public:
 	void run();
 
 };
+
+#endif // SERVER_HPP

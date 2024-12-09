@@ -13,9 +13,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "Server.hpp"
-#include "Client.hpp"
-#include "Parser.hpp"
+class Parser;
 
 #ifndef BUFFUR_SIZE
 # define BUFFUR_SIZE 512
@@ -25,9 +23,17 @@
 # define MAX_CLIENTS 999
 #endif
 
+enum e_cmdType {
+	CMD_NICK,
+	CMD_USER,
+	CMD_QUIT,
+	CMD_UNKNOWN
+};
+
 typedef std::vector<Parser>::iterator parserIt;
 
 void 						makeSocketNonBlock(int fd);
+e_cmdType 					getCmdType(const std::string& command);
 std::vector<std::string>	split(std::string toSplit, char delim);
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos);
 

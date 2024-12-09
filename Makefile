@@ -14,6 +14,7 @@ OBJ_DIR	=	obj/
 # .cpp and .o files
 
 SRC		 =		main.cpp 	\
+				utils.cpp	\
 				Server.cpp	\
 				Client.cpp	\
 				Parser.cpp

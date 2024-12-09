@@ -6,11 +6,12 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/07 11:51:13 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/09 12:22:57 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef CLIENT_HPP
+# define CLIENT_HPP
 
 #include "includes.hpp"
 
@@ -38,3 +39,4 @@ public:
 	void setIsAuth(bool _isAuth);
 };
 
+#endif // CLIENT_HPP

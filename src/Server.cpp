@@ -6,11 +6,14 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/08 19:47:44 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/09 17:36:55 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "includes.hpp"
+// #include "includes.hpp"
+#include "Server.hpp"
+#include "Client.hpp"
+#include "Parser.hpp"
 
 Server::Server() : passWord("serveur42"), port(8080) {
 	this->serverFd = -1;
@@ -24,23 +27,9 @@ Server::Server(int _port, std::string _passWord) : passWord(_passWord), port(_po
 
 Server::~Server() {}
 
-void makeSocketNonBlock(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
-}
-
-void Server::parseMess(std::string message) {
-	size_t		pos = 0;
-	std::string	res;
-	Parser		parsed;
-
-	while (getStringUntil(message, res, '\n', pos)) {
-		if (res != "") {
-			parsed.parseMessage(res);
-			this->parsedMessages.push_back(parsed);
-		}
-	}
-}
+/* -------------------------------------------------------------------------- */
+/*                              Private methods                               */
+/* -------------------------------------------------------------------------- */
 
 void Server::createSocket(void) {
 	this->serverFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -72,11 +61,10 @@ void Server::createSocket(void) {
 	makeSocketNonBlock(this->serverFd);
 	pollfd pfd = {this->serverFd, POLLIN, 0};
 	this->pollFds.push_back(pfd);
-    std::cout << "Server listening on port " << this->port << std::endl;
-	this->run();
 }
 
 void Server::run() {
+    std::cout << "Server listening on port " << this->port << std::endl;
 	this->isRunning = true;
 	while (this->isRunning) {
 		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
@@ -129,39 +117,17 @@ void Server::handleEvent(size_t &i) {
 	}
 }
 
-bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos) {
-	size_t delimPos = input.find(delimiter, startPos);
-
-	if (startPos == std::string::npos)
-		return false;
-
-	if (delimPos == std::string::npos) {
-		result = input.substr(startPos);
-		startPos = std::string::npos;
-		return (true);
-	}
-	result = input.substr(startPos, delimPos - startPos);
-	startPos = delimPos + 1;
-	return (true);
-}
-
-Parser	Server::searchForCmd(std::string cmd) {
-	parserIt it;
-	for (it = this->parsedMessages.begin(); it != this->parsedMessages.end(); ++it) {
-		if (it->command == cmd)
-			return (*it);
-	}
-	return (*it);
-}
-
 void Server::handleClientMessage(Client *client, std::string const &message) {
+	// std::cout << "message: '" << message << "'" << std::endl;
 	this->parseMess(message);
-	(void) client;
 	if (client->getIsAuth() == false) {
-		Parser pass = this->searchForCmd("PASS");
-		if (pass.params[0] == this->passWord) {
+		parserIt pass = this->searchForCmd("PASS");
+		// std::cout << "pass: '" << this->passWord << "'" << std::endl;
+		if (pass != this->parsedMessages.end() && (*pass).params[0] == this->passWord) {
 				client->setIsAuth(true);
 				std::cout << "Client authentificated: " << client->getFd() << std::endl;
+				this->parsedMessages.erase(pass);
+				this->handleCommands();
 		}
 		else {
 			std::cout << "Wrong password from: " << client->getFd() << std::endl;
@@ -170,39 +136,51 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 	}
 	else {
 		// Gérer les commandes
+		this->handleCommands();
 	}
+}
 
+void Server::handleCommands() {
+	parserIt it = this->parsedMessages.begin();
+	while (this->parsedMessages.size() >= 1) {
+		switch (getCmdType((*it).command)) {
+			case CMD_NICK:
+				std::cout << "NICK" << std::endl;
+				break;
+			case CMD_USER:
+				std::cout << "USER" << std::endl;
+				break;
+			case CMD_QUIT:
+				std::cout << "QUIT" << std::endl;
+				break;
+			case CMD_UNKNOWN:
+				std::cout << "UNKNOWN" << std::endl;
+				break;
+		}
+		this->parsedMessages.erase(it);
+	}
+}
 
+parserIt	Server::searchForCmd(std::string cmd) {
+	parserIt it;
+	for (it = this->parsedMessages.begin(); it != this->parsedMessages.end(); ++it) {
+		if (it->command == cmd)
+			return (it);
+	}
+	return (it);
+}
 
-	// ----------------------------------- //
-	// size_t ind;
-	// size_t i = 0;
-	// if (client->getIsAuth() == false) {
-	// 	ind = message.find("PASS ");
-	// 	std::cout << "index of PASS: " << ind << std::endl;
-	// 	if (ind != std::string::npos) {
-	// 		std::string pass;
-	// 		getStringUntil(message.substr(ind + 5), pass, '\n', i);
-	// 		std::cout << "pass provided: '"<< pass << "'" << std::endl;
-	// 		if (pass == this->passWord) {
-	// 			client->setIsAuth(true);
-	// 			std::cout << "Client authentificated: " << client->getFd() << std::endl;
-	// 		}
-	// 		else {
-	// 			std::cout << "Wrong password from: " << client->getFd() << std::endl;
-	// 			close(client->getFd());
-	// 		}
-	// 	}
-	// }
-	// else {
-	// 	// Gérer les commandes
-	// 	std::string cmd;
-	// 	ind = message.find("NICK :");
-	// 	if (ind != std::string::npos)
-	// 		getStringUntil(message.substr(ind + 6), cmd, '\n', i);
-	// 	ind = message.find("JOIN ");
-	// 	if (ind != std::string::npos) 
-	// 		getStringUntil(message.substr(ind + 5), cmd, '\n', i);
-	// 	std::cout << "cmd provided: '"<< cmd << "'" << std::endl;
-	// }
+void Server::parseMess(std::string message) {
+	size_t		pos = 0;
+	std::string	res;
+	Parser		parsed;
+
+	message.erase(std::remove(message.begin(), message.end(), '\r'), message.end());
+	while (getStringUntil(message, res, '\n', pos)) {
+		if (res != "") {
+			parsed.parseMessage(res);
+			this->parsedMessages.push_back(parsed);
+		}
+		res = "";
+	}
 }

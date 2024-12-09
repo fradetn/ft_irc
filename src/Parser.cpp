@@ -1,21 +1,10 @@
-#include "includes.hpp"
+// #include "includes.hpp"
+#include "Parser.hpp"
 
 Parser::Parser(/* args */) : prefix(""), command("") {
 }
 
 Parser::~Parser() {
-}
-
-std::vector<std::string> split(std::string toSplit, char delim) {
-	std::vector<std::string> splited;
-	std::string res;
-	size_t pos = 0;
-
-	while (getStringUntil(toSplit, res, delim, pos)) {
-		splited.push_back(res);
-	}
-
-	return (splited);
 }
 
 void affStr(std::string str) {
@@ -25,6 +14,7 @@ void affStr(std::string str) {
 void Parser::parseMessage(std::string message) {
 	size_t pos = 0;
 
+	// std::cout << "one message: '" << message << "'" << std::endl;
 	if (message[0] == ':') {
 		pos = message.find(' ');
 		this->prefix = message.substr(1, pos - 1);
