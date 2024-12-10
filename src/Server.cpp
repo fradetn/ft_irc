@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/09 17:36:55 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/10 22:22:39 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,12 +87,20 @@ void Server::run() {
 void Server::handleEvent(size_t &i) {
 	if (this->pollFds[i].fd == this->serverFd) {
 		// Nouvelle connexion
-		int clientFd = accept(this->serverFd, NULL, NULL);
+		sockaddr_in addr = {};
+		socklen_t addrlen = sizeof(addr);
+		
+		int clientFd = accept(this->serverFd, (sockaddr *) &addr, &addrlen);
+		if (clientFd < 0)
+			throw std::runtime_error("Error: accepting new client failed");
 		if (clientFd >= 0) {
+			// char *ip = inet_ntoa(addr.sin_addr);
+			struct hostent *host = gethostbyaddr(&(addr.sin_addr), sizeof(addr.sin_addr), AF_INET);
+    
 			makeSocketNonBlock(clientFd);
 			pollfd pfd = {clientFd, POLLIN, 0};
 			this->pollFds.push_back(pfd);
-			this->clients[clientFd] = new Client(clientFd);
+			this->clients[clientFd] = new Client(clientFd, host->h_name);
 			std::cout << "New client connected: " << clientFd << std::endl;
 		}
 	}
@@ -118,34 +126,41 @@ void Server::handleEvent(size_t &i) {
 }
 
 void Server::handleClientMessage(Client *client, std::string const &message) {
-	// std::cout << "message: '" << message << "'" << std::endl;
+	std::cout << "message: '" << message << "'" << std::endl;
 	this->parseMess(message);
 	if (client->getIsAuth() == false) {
 		parserIt pass = this->searchForCmd("PASS");
 		// std::cout << "pass: '" << this->passWord << "'" << std::endl;
-		if (pass != this->parsedMessages.end() && (*pass).params[0] == this->passWord) {
+		if (pass != this->parsedMessages.end() ) {
+			if ((*pass).params[0] == this->passWord) {
 				client->setIsAuth(true);
 				std::cout << "Client authentificated: " << client->getFd() << std::endl;
 				this->parsedMessages.erase(pass);
-				this->handleCommands();
+				this->handleCommands(client);				
+			}
+			else {
+				std::cout << "Wrong password from: " << client->getFd() << std::endl;
+				client->respond(ERR_PASSWDMISMATCH(client->getNickName()));
+				close(client->getFd());
+			}
 		}
 		else {
-			std::cout << "Wrong password from: " << client->getFd() << std::endl;
-			close(client->getFd());
+			client->respond(ERR_NOTREGISTERED(this->parsedMessages[0].command));
 		}
 	}
 	else {
 		// Gérer les commandes
-		this->handleCommands();
+		this->handleCommands(client);
 	}
 }
 
-void Server::handleCommands() {
+void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
 	while (this->parsedMessages.size() >= 1) {
 		switch (getCmdType((*it).command)) {
 			case CMD_NICK:
 				std::cout << "NICK" << std::endl;
+				Server::cmdNick(client, *it);
 				break;
 			case CMD_USER:
 				std::cout << "USER" << std::endl;
@@ -155,10 +170,20 @@ void Server::handleCommands() {
 				break;
 			case CMD_UNKNOWN:
 				std::cout << "UNKNOWN" << std::endl;
-				break;
+				client->respond(ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
+				break;	
 		}
 		this->parsedMessages.erase(it);
 	}
+}
+
+Client		*Server::getClient(std::string const &nickname) {
+	std::map<int, Client *>::iterator it;
+
+	for (it = this->clients.begin(); it != this->clients.end(); ++it)
+		if (nickname == (*it).second->getNickName())
+			return ((*it).second);
+	return (NULL);
 }
 
 parserIt	Server::searchForCmd(std::string cmd) {

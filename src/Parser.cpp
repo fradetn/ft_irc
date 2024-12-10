@@ -1,4 +1,4 @@
-// #include "includes.hpp"
+#include "includes.hpp"
 #include "Parser.hpp"
 
 Parser::Parser(/* args */) : prefix(""), command("") {
@@ -15,6 +15,7 @@ void Parser::parseMessage(std::string message) {
 	size_t pos = 0;
 
 	// std::cout << "one message: '" << message << "'" << std::endl;
+	this->fullCmd = message;
 	if (message[0] == ':') {
 		pos = message.find(' ');
 		this->prefix = message.substr(1, pos - 1);
@@ -26,10 +27,10 @@ void Parser::parseMessage(std::string message) {
 
 	pos = message.find(" :");
 	if (pos != std::string::npos) {
-		std::string trailing = message.substr(pos + 2);
+		this->trailing = message.substr(pos + 2);
 		message = message.substr(0, pos);
 		this->params = split(message, ' ');
-        this->params.push_back(trailing);
+        // this->params.push_back(trailing);
 	}
 	else{
 		this->params = split(message, ' ');

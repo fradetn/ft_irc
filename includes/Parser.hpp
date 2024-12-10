@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/08 15:33:28 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/09 12:22:23 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/10 20:59:06 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,11 @@ class Parser
 private:
 
 public:
+	std::string fullCmd;
 	std::string prefix;
 	std::string command;
     std::vector<std::string> params;
+	std::string trailing;
 
 	Parser(/* args */);
 	~Parser();

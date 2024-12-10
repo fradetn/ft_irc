@@ -13,10 +13,11 @@ OBJ_DIR	=	obj/
 
 # .cpp and .o files
 
-SRC		 =		main.cpp 	\
-				utils.cpp	\
-				Server.cpp	\
-				Client.cpp	\
+SRC		 =		main.cpp 		\
+				utils.cpp		\
+				Server.cpp		\
+				Client.cpp		\
+				commands.cpp	\
 				Parser.cpp
 
 OBJ		 =	$(SRC:%.cpp=$(OBJ_DIR)%.o)
