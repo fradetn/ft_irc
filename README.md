@@ -29,9 +29,10 @@
    * o : Donner/retirer le privilège de l’opérateur de canal
    * l : Définir/supprimer la limite d’utilisateurs pour le canal
 
-Si un client envoie un message malformé (par exemple, ABCXYZ sans commande reconnue),<br>
+> [!WARNING]
+> Si un client envoie un message malformé (par exemple, ABCXYZ sans commande reconnue),<br>
 votre serveur doit répondre avec :
-
+> 
 ``` ruby
 :<server> 421 <nickname> <command> :Unknown command
 ```
