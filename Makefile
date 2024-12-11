@@ -17,6 +17,7 @@ SRC		 =		main.cpp 		\
 				utils.cpp		\
 				Server.cpp		\
 				Client.cpp		\
+				Channel.cpp		\
 				commands.cpp	\
 				Parser.cpp
 

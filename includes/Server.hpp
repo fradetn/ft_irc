@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/11 12:49:33 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/11 18:35:33 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 class Client;
 class Parser;
+class Channel;
 
 class Server
 {
@@ -32,7 +33,8 @@ private:
 	unsigned int 			port;
 	std::vector<pollfd> 	pollFds;
 	std::map<int, Client*>	clients;
-
+	std::vector<Channel*>	channels;
+	
 	std::vector<Parser>		parsedMessages;
 
 	bool					isRunning;
@@ -48,6 +50,7 @@ private:
 	
 	Client		*getClientByNick(std::string const &nickname);
 	Client		*getClientByUser(std::string const &username);
+	Channel		*getChannelByName(std::string const &name);
 	parserIt	searchForCmd(std::string cmd);
 	pollFdIt 	searchForFd(int fd);
 	void		parseMess(std::string message);
@@ -68,7 +71,7 @@ public:
 	void cmdNick(Client *client, Parser cmd);
 	void cmdUser(Client *client, Parser cmd);
 	void cmdQuit(Client *client, Parser cmd);
-	// void cmdJoin(Client *client, Parser cmd);
+	void cmdJoin(Client *client, Parser cmd);
 
 };
 

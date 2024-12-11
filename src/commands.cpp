@@ -2,6 +2,7 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 void Server::cmdNick(Client *client, Parser cmd) {
 	if (cmd.params.empty()) { // si aucun parametres ou trop
@@ -36,14 +37,13 @@ void Server::cmdUser(Client *client, Parser cmd) {
 		client->respond(ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
-	else if (this->getClientByUser(cmd.params[0]) != NULL) { // si aucun client n'a deja ce UserName
+	else if (this->getClientByUser(cmd.params[0]) != NULL) { // si ce UserName est deja pris
 		std::cout << "ERR_ALREADYREGISTRED" << std::endl;
 		client->respond(ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
 
 	client->setUserName(cmd.params[0]);
-	
 }
 
 void Server::cmdQuit(Client *client, Parser cmd) {
@@ -51,6 +51,27 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 	this->disconectClient(client);
 }
 
-// void Server::cmdJoin(Client *client, Parser cmd) {
-
-// }
+void Server::cmdJoin(Client *client, Parser cmd) {
+	if (cmd.params.size() < 1 || cmd.params.size() > 2) {
+			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+		client->respond(ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+	std::vector<std::string> chans = split(cmd.params[0], ',');
+	std::vector<std::string> keys;
+	std::vector<std::string>::iterator keysIt;
+	if (!cmd.params[1].empty()) {
+		keys = split(cmd.params[1], ',');
+	}
+	keysIt = keys.begin();
+	std::vector<std::string>::iterator chanIt;
+	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
+		Channel *channel = this->getChannelByName(*chanIt);
+		if (channel == NULL) {
+			this->channels.push_back(new Channel(client, *chanIt));
+		}
+		else {
+			channel->addNewClient(client, *keysIt);
+		}
+	}
+}

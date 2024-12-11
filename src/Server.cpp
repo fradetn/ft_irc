@@ -6,14 +6,15 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/11 13:12:51 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/11 18:42:25 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include "includes.hpp"
+#include "includes.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Parser.hpp"
+#include "Channel.hpp"
 
 Server::Server() : passWord("serveur42"), port(8080) {
 	this->serverFd = -1;
@@ -25,7 +26,9 @@ Server::Server(int _port, std::string _passWord) : passWord(_passWord), port(_po
 	this->createSocket();
 }
 
-Server::~Server() {}
+Server::~Server() {
+	
+}
 
 /* -------------------------------------------------------------------------- */
 /*                              Private methods                               */
@@ -176,6 +179,10 @@ void Server::handleCommands(Client *client) {
 	}
 }
 
+/* -------------------------------------------------------------------------- */
+/*                                    Utils                                   */
+/* -------------------------------------------------------------------------- */
+
 Client		*Server::getClientByNick(std::string const &nickname) {
 	std::map<int, Client *>::iterator it;
 
@@ -190,6 +197,14 @@ Client		*Server::getClientByUser(std::string const &username) {
 	for (it = this->clients.begin(); it != this->clients.end(); ++it)
 		if (username == (*it).second->getUserName())
 			return ((*it).second);
+	return (NULL);
+}
+Channel		*Server::getChannelByName(std::string const &name) {
+	std::vector<Channel *>::iterator it;
+	
+	for (it = this->channels.begin(); it != this->channels.end(); ++it)
+		if ((*it)->getName() == name)
+			return ((*it));
 	return (NULL);
 }
 
