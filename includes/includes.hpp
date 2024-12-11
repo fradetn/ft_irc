@@ -18,6 +18,7 @@
 class Parser;
 
 // Erreurs liées à l'authentification
+# define ERR_ALREADYREGISTRED(nickname)				"462 " + nickname + " :You may not reregister"
 # define ERR_PASSWDMISMATCH(nickname)				"464 " + nickname + " :Incorrect password (disconecting)"
 # define ERR_NOTREGISTERED(command)					"451 " + command + " :You have not registered"
 # define ERR_NONICKNAMEGIVEN(nickname)				"431 " + nickname + " :No nickname given"
@@ -43,6 +44,7 @@ enum e_cmdType {
 };
 
 typedef std::vector<Parser>::iterator parserIt;
+typedef std::vector<pollfd>::iterator pollFdIt;
 
 void 						makeSocketNonBlock(int fd);
 e_cmdType 					getCmdType(const std::string& command);

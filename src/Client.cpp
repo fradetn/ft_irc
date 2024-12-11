@@ -65,7 +65,7 @@ std::string Client::getPrefix() const {
 	std::string username = this->userName.empty() ? "" : "!" + this->userName;
 	std::string hostname = this->hostName.empty() ? "" : "@" + this->hostName;
 
-	return (":" + this->nickName + username + hostname);
+	return (this->nickName + username + hostname);
 }
 
 void Client::write(std::string const &message) const {
@@ -75,5 +75,5 @@ void Client::write(std::string const &message) const {
 }
 
 void Client::respond(std::string const &message) const {
-	this->write(this->getPrefix() + " " + message);
+	this->write(":" + this->getPrefix() + " " + message);
 }

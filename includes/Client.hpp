@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/10 21:47:39 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/10 22:55:57 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 
 class Client
 {
+
 private:
 	int 		fd;
 	std::string	nickName;

@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/10 22:22:39 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/11 13:12:51 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void Server::handleEvent(size_t &i) {
 		// Nouvelle connexion
 		sockaddr_in addr = {};
 		socklen_t addrlen = sizeof(addr);
-		
+
 		int clientFd = accept(this->serverFd, (sockaddr *) &addr, &addrlen);
 		if (clientFd < 0)
 			throw std::runtime_error("Error: accepting new client failed");
@@ -111,11 +111,8 @@ void Server::handleEvent(size_t &i) {
 		if (byteRead <= 0) {
 			//Déconnexion
 			std::cout << "Déconnexion: " << this->pollFds[i].fd << std::endl;
-			close(this->pollFds[i].fd);
-			delete this->clients[this->pollFds[i].fd];
-			this->clients.erase(this->pollFds[i].fd);
-			this->pollFds.erase(this->pollFds.begin() + i);
-			--i;
+			this->disconectClient(this->clients[this->pollFds[i].fd]);
+			// --i;
 		}
 		else {
 			buffer[byteRead] = '\0';
@@ -141,7 +138,7 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 			else {
 				std::cout << "Wrong password from: " << client->getFd() << std::endl;
 				client->respond(ERR_PASSWDMISMATCH(client->getNickName()));
-				close(client->getFd());
+				this->disconectClient(client);
 			}
 		}
 		else {
@@ -160,13 +157,15 @@ void Server::handleCommands(Client *client) {
 		switch (getCmdType((*it).command)) {
 			case CMD_NICK:
 				std::cout << "NICK" << std::endl;
-				Server::cmdNick(client, *it);
+				this->cmdNick(client, *it);
 				break;
 			case CMD_USER:
 				std::cout << "USER" << std::endl;
+				this->cmdUser(client, *it);
 				break;
 			case CMD_QUIT:
 				std::cout << "QUIT" << std::endl;
+				this->cmdQuit(client, *it);
 				break;
 			case CMD_UNKNOWN:
 				std::cout << "UNKNOWN" << std::endl;
@@ -177,13 +176,41 @@ void Server::handleCommands(Client *client) {
 	}
 }
 
-Client		*Server::getClient(std::string const &nickname) {
+Client		*Server::getClientByNick(std::string const &nickname) {
 	std::map<int, Client *>::iterator it;
 
 	for (it = this->clients.begin(); it != this->clients.end(); ++it)
 		if (nickname == (*it).second->getNickName())
 			return ((*it).second);
 	return (NULL);
+}
+Client		*Server::getClientByUser(std::string const &username) {
+	std::map<int, Client *>::iterator it;
+
+	for (it = this->clients.begin(); it != this->clients.end(); ++it)
+		if (username == (*it).second->getUserName())
+			return ((*it).second);
+	return (NULL);
+}
+
+void Server::disconectClient(Client *client) {
+	pollFdIt pfdIt = searchForFd(client->getFd());
+	int fdSaved = client->getFd();
+	close(fdSaved);
+	
+	delete this->clients[client->getFd()];
+	this->clients.erase(fdSaved);
+	if (pfdIt != this->pollFds.end())
+		this->pollFds.erase(pfdIt);
+}
+
+pollFdIt Server::searchForFd(int fd) {
+	pollFdIt it;
+	for (it = this->pollFds.begin(); it != this->pollFds.end(); ++it) {
+		if (it->fd == fd)
+			return (it);
+	}
+	return (it);
 }
 
 parserIt	Server::searchForCmd(std::string cmd) {
@@ -199,6 +226,9 @@ void Server::parseMess(std::string message) {
 	size_t		pos = 0;
 	std::string	res;
 	Parser		parsed;
+
+	if (!this->parsedMessages.empty())
+		this->parsedMessages.clear();
 
 	message.erase(std::remove(message.begin(), message.end(), '\r'), message.end());
 	while (getStringUntil(message, res, '\n', pos)) {
