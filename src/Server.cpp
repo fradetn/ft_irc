@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 17:09:59 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/12 23:19:35 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,8 +186,9 @@ Channel		*Server::getChannelByName(std::string const &name) {
 void Server::disconectClient(Client *client) {
 	pollFdIt pfdIt = searchForFd(client->getFd());
 	int fdSaved = client->getFd();
+
+	this->rmCliFromAllChan(client);
 	close(fdSaved);
-	
 	delete this->clients[client->getFd()];
 	this->clients.erase(fdSaved);
 	if (pfdIt != this->pollFds.end())
@@ -210,6 +211,19 @@ parserIt	Server::searchForCmd(std::string cmd) {
 			return (it);
 	}
 	return (it);
+}
+
+void Server::rmCliFromAllChan(Client *client) {
+	std::vector<Channel *>::iterator it;
+	
+	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
+		if ((*it)->removeClient(client) == false) {
+			// Delete channel
+			delete (*it);
+			this->channels.erase(it);
+			it--;
+		}
+	}
 }
 
 void Server::parseMess(std::string message) {

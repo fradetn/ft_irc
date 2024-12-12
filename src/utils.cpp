@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 18:41:23 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/12 23:03:37 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ std::vector<std::string> split(std::string toSplit, char delim) {
 		splited.push_back("");
 	else {
 		while (getStringUntil(toSplit, res, delim, pos)) {
-			std::cout << "dans la boucle" << std::endl;
 			splited.push_back(res);
 		}
 	}

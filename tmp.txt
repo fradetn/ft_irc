@@ -1,0 +1,89 @@
+https://rfc-editor.org/rfc/rfc2812#section-5
+
+Erreurs liées aux utilisateurs
+
+ERR_NOSUCHNICK
+:<server> 401 <nickname> <target> :No such nick/channel
+Description : L'utilisateur ou le channel spécifié n'existe pas.
+
+ERR_NOSUCHSERVER
+:<server> 402 <nickname> <server> :No such server
+Description : Le serveur spécifié n'est pas accessible.
+
+ERR_NOSUCHCHANNEL
+:<server> 403 <nickname> <channel> :No such channel
+Description : Le channel demandé n'existe pas.
+
+2. Erreurs liées aux channels
+
+ERR_NOTONCHANNEL
+:<server> 442 <nickname> <channel> :You're not on that channel
+Description : Vous essayez d'effectuer une action sur un channel sans y être connecté.
+
+ERR_USERNOTINCHANNEL
+:<server> 441 <nickname> <target> <channel> :They aren't on that channel
+Description : Vous essayez de mentionner ou d'interagir avec un utilisateur qui n'est pas dans ce channel.
+
+ERR_CHANNELISFULL
+:<server> 471 <nickname> <channel> :Cannot join channel (+l)
+Description : Le channel a atteint sa limite d'utilisateurs.
+
+ERR_INVITEONLYCHAN
+:<server> 473 <nickname> <channel> :Cannot join channel (+i)
+Description : Le channel est configuré comme "sur invitation seulement".
+
+ERR_BANNEDFROMCHAN
+:<server> 474 <nickname> <channel> :Cannot join channel (+b)
+Description : Vous êtes banni de ce channel.
+
+ERR_BADCHANNELKEY
+:<server> 475 <nickname> <channel> :Cannot join channel (+k)
+Description : Le channel est protégé par un mot de passe incorrect.
+
+3. Erreurs liées aux commandes
+
+ERR_UNKNOWNCOMMAND
+:<server> 421 <nickname> <command> :Unknown command
+Description : La commande spécifiée n'est pas reconnue par le serveur.
+
+ERR_NEEDMOREPARAMS
+:<server> 461 <nickname> <command> :Not enough parameters
+Description : Une commande nécessite des paramètres supplémentaires qui n'ont pas été fournis.
+
+4. Erreurs liées aux permissions
+
+ERR_CHANOPRIVSNEEDED
+:<server> 482 <nickname> <channel> :You're not channel operator
+Description : Vous essayez d'effectuer une commande nécessitant des privilèges d'opérateur sur un channel.
+
+ERR_CANNOTSENDTOCHAN
+:<server> 404 <nickname> <channel> :Cannot send to channel
+Description : Vous n'avez pas la permission d'envoyer des messages dans ce channel (par exemple, s'il est en mode restreint).
+5. Erreurs liées à l'authentification
+
+ERR_NONICKNAMEGIVEN
+:<server> 431 <nickname> :No nickname given
+Description : Aucun nickname n'a été spécifié lors de l'authentification.
+
+ERR_ERRONEUSNICKNAME
+:<server> 432 <nickname> <bad_nick> :Erroneous nickname
+Description : Le nickname spécifié est invalide (peut contenir des caractères non autorisés).
+
+ERR_NICKNAMEINUSE
+:<server> 433 <nickname> <nick> :Nickname is already in use
+Description : Le nickname est déjà utilisé par un autre utilisateur.
+
+ERR_ALREADYREGISTRED
+:<server> 462 <nickname> :You may not reregister
+Description : Vous essayez de vous réauthentifier alors que vous êtes déjà connecté.
+
+Format général des messages d'erreur
+
+Tous les messages suivent ce format :
+
+:<server> <code> <nickname> [<additional arguments>] :<description>
+<server> : Le serveur qui envoie le message.
+<code> : Le code numérique correspondant à l'erreur.
+<nickname> : Le nickname de l'utilisateur concerné.
+<additional arguments> : Des arguments spécifiques au message (ex. : channel, commande).
+<description> : Un message décrivant l'erreur.

@@ -30,6 +30,7 @@ void Server::handleCommands(Client *client) {
 				break;	
 		}
 		this->parsedMessages.erase(it);
+		std::cout << std::endl;
 	}
 }
 
@@ -55,7 +56,6 @@ void Server::cmdNick(Client *client, Parser cmd) {
 }
 
 void Server::cmdUser(Client *client, Parser cmd) {
-	std::cout << "size: " << cmd.params.size() << std::endl;
 	if (cmd.params.size() < 3 || cmd.trailing.empty()) {
 			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
 		client->respond(ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
@@ -83,15 +83,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 void Server::cmdJoin(Client *client, Parser cmd) {
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
 		std::cout << "Removing client from all Channels" << std::endl; 
-		std::vector<Channel *>::iterator it;
-		for (it = this->channels.begin(); it != this->channels.end(); ++it) {
-			if ((*it)->removeClient(client) == false) {
-				// Delete channel
-				delete (*it);
-				this->channels.erase(it);
-				it--;
-			}
-		}
+		this->rmCliFromAllChan(client);
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
 			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
@@ -106,7 +98,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		keys = split("", ' ');
 	std::vector<std::string>::iterator keysIt = keys.begin();
 	std::vector<std::string>::iterator chanIt;
-	
+
 	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
 		Channel *channel = this->getChannelByName(*chanIt);
 		if (channel == NULL) { // si le channel n'existe pas, on le créer avec le client comme admin
@@ -118,5 +110,10 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		if (keysIt != keys.end())
 			keysIt++;
 	}
-	// std::cout << "channels: "
+	std::cout << "channels: " << std::endl;
+	std::vector<Channel *>::iterator it;
+
+	for (it = this->channels.begin(); it != this->channels.end(); ++it)
+		std::cout << (*it)->getName() << std::endl;
+
 }
