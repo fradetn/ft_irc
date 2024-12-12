@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/09 17:16:34 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/12 18:41:23 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,12 @@ bool getStringUntil(const std::string& input, std::string& result, char delimite
     if (startPos >= input.length()) {
         return false;
     }
-    // Trouver la position de départ effective en sautant les espaces
+    // Trouver la position de départ effective en sautant les delim
     size_t begin = startPos;
     while (begin < input.length() && input[begin] == delimiter) {
         ++begin;
     }
-    // Si tout est des espaces ou que la chaîne est vide
+    // Si tout est des delim ou que la chaîne est vide
     if (begin >= input.length()) {
         return false;
     }
@@ -50,13 +50,18 @@ bool getStringUntil(const std::string& input, std::string& result, char delimite
 
 std::vector<std::string> split(std::string toSplit, char delim) {
 	std::vector<std::string> splited;
-	std::string res;
+	std::string res = "";
 	size_t pos = 0;
 
-	while (getStringUntil(toSplit, res, delim, pos)) {
-		splited.push_back(res);
+	if (toSplit.empty())
+		splited.push_back("");
+	else {
+		while (getStringUntil(toSplit, res, delim, pos)) {
+			std::cout << "dans la boucle" << std::endl;
+			splited.push_back(res);
+		}
 	}
-
+	
 	return (splited);
 }
 
@@ -64,5 +69,6 @@ e_cmdType getCmdType(const std::string& command) {
     if (command == "NICK") return CMD_NICK;
     if (command == "USER") return CMD_USER;
     if (command == "QUIT") return CMD_QUIT;
+    if (command == "JOIN") return CMD_JOIN;
     return CMD_UNKNOWN;
 }

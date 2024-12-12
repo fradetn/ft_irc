@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/11 18:42:25 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/12 17:09:59 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,31 +151,6 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 	else {
 		// Gérer les commandes
 		this->handleCommands(client);
-	}
-}
-
-void Server::handleCommands(Client *client) {
-	parserIt it = this->parsedMessages.begin();
-	while (this->parsedMessages.size() >= 1) {
-		switch (getCmdType((*it).command)) {
-			case CMD_NICK:
-				std::cout << "NICK" << std::endl;
-				this->cmdNick(client, *it);
-				break;
-			case CMD_USER:
-				std::cout << "USER" << std::endl;
-				this->cmdUser(client, *it);
-				break;
-			case CMD_QUIT:
-				std::cout << "QUIT" << std::endl;
-				this->cmdQuit(client, *it);
-				break;
-			case CMD_UNKNOWN:
-				std::cout << "UNKNOWN" << std::endl;
-				client->respond(ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
-				break;	
-		}
-		this->parsedMessages.erase(it);
 	}
 }
 

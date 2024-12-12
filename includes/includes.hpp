@@ -28,6 +28,11 @@ class Parser;
 # define ERR_UNKNOWNCOMMAND(nickname, command)		"421 " + nickname + " " + command + " :Unknown command"
 # define ERR_NEEDMOREPARAMS(nickname, command)		"461 " + nickname + " " + command + " :Not enough parameters"
 
+// Erreurs liées aux channels
+# define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+# define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
+# define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
+
 #ifndef BUFFUR_SIZE
 # define BUFFUR_SIZE 512
 #endif
@@ -40,6 +45,7 @@ enum e_cmdType {
 	CMD_NICK,
 	CMD_USER,
 	CMD_QUIT,
+	CMD_JOIN,
 	CMD_UNKNOWN
 };
 
@@ -50,5 +56,15 @@ void 						makeSocketNonBlock(int fd);
 e_cmdType 					getCmdType(const std::string& command);
 std::vector<std::string>	split(std::string toSplit, char delim);
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos);
+
+// template <typename T>
+// bool searchInVector(std::vector<T> vector, T param) {
+// 	std::vector<T>::iterator it;
+// 	for (it = vector.begin(); it != vector.end(); ++it) {
+// 		if (it->fd == fd)
+// 			return (it);
+// 	}
+// 	return (it);
+// };
 
 #endif
