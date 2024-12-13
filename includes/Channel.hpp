@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 16:48:49 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/13 19:34:52 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,12 +32,13 @@ private:
 public:
 	Channel();
 	Channel(Client *first, std::string _name);
+	Channel(Client *first, std::string _name, std::string _key);
 	~Channel();
 	
 	std::string getName() const;
 	
 	bool removeClient(Client *client);
-	void addNewClient(Client *newClient, std::string key);
+	bool addNewClient(Client *newClient, std::string key);
 	bool isClientInChan(Client *client);
 	bool isClientBanned(Client *client);
 	bool isOneAdminInChan();

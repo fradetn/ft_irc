@@ -32,6 +32,7 @@ class Parser;
 # define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
 # define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
+# define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 
 #ifndef BUFFUR_SIZE
 # define BUFFUR_SIZE 512

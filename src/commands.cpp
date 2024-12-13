@@ -26,7 +26,7 @@ void Server::handleCommands(Client *client) {
 				break;
 			case CMD_UNKNOWN:
 				std::cout << "UNKNOWN" << std::endl;
-				client->respond(ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
+				this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
 				break;	
 		}
 		this->parsedMessages.erase(it);
@@ -34,6 +34,14 @@ void Server::handleCommands(Client *client) {
 	}
 }
 
+/**
+ * @brief Command: NICK
+ *
+ * Parameters: <nickname>
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
 void Server::cmdNick(Client *client, Parser cmd) {
 	if (cmd.params.empty()) { // si aucun parametres ou trop
 			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
@@ -55,6 +63,14 @@ void Server::cmdNick(Client *client, Parser cmd) {
 	}
 }
 
+/**
+ * @brief Command: USER
+ *
+ * Parameters: <user> <mode> <unused> :<realname>
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
 void Server::cmdUser(Client *client, Parser cmd) {
 	if (cmd.params.size() < 3 || cmd.trailing.empty()) {
 			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
@@ -80,13 +96,27 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 	this->disconectClient(client);
 }
 
+/**
+ * @brief 
+ * Command: JOIN
+ * 
+ * Parameters: ( #<channel> *( "," #<channel> ) [ <key> *( "," <key> ) ] )
+ * 
+ * 				OR "0"
+ * 
+ * @param client pointer to client
+ * @param cmd parsed command line
+ */
 void Server::cmdJoin(Client *client, Parser cmd) {
+	bool isJoined;
+
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
 		std::cout << "Removing client from all Channels" << std::endl; 
 		this->rmCliFromAllChan(client);
+		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
-			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+		std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
 		client->respond(ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
 	}
@@ -100,20 +130,33 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	std::vector<std::string>::iterator chanIt;
 
 	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
-		Channel *channel = this->getChannelByName(*chanIt);
+		std::string channelName = (*chanIt)[0] == '#' ? (*chanIt).substr(1) : "";
+		if (channelName == "") {
+			std::cout << "ERR_NOSUCHCHANNEL" << std::endl;
+			return (client->respond(ERR_NOSUCHCHANNEL(*chanIt)));
+		}
+		Channel *channel = this->getChannelByName(channelName);
 		if (channel == NULL) { // si le channel n'existe pas, on le créer avec le client comme admin
-			this->channels.push_back(new Channel(client, *chanIt));
+			if (keysIt != keys.end())
+				this->channels.push_back(new Channel(client, channelName, *keysIt));
+			else
+				this->channels.push_back(new Channel(client, channelName));
+			isJoined = true;
 		}
 		else {
-			channel->addNewClient(client, *keysIt);
+			isJoined |= channel->addNewClient(client, *keysIt);
+		}
+		if (isJoined) {
+			// envoyer confirmation
+			client->respond("JOIN #" + channelName);
 		}
 		if (keysIt != keys.end())
 			keysIt++;
 	}
+
 	std::cout << "channels: " << std::endl;
 	std::vector<Channel *>::iterator it;
 
 	for (it = this->channels.begin(); it != this->channels.end(); ++it)
 		std::cout << (*it)->getName() << std::endl;
-
 }

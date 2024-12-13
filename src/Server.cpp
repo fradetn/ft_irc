@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 23:19:35 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/13 20:25:34 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,11 +55,29 @@ void Server::createSocket(void) {
 	if (bind(this->serverFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
 		close(this->serverFd);
 		throw std::runtime_error("Error: bind failed");
-	}
+	}	
 	if (listen(this->serverFd, MAX_CLIENTS) < 0) {  // MAX_CLIENTS : nombre maximal de connexions en file d'attente
 		close(this->serverFd);
 		throw std::runtime_error("Error: listen failed");
 	}
+	    // Récupérer l'adresse réelle liée au socket
+    sockaddr_in actualAddr;
+    socklen_t addrLen = sizeof(actualAddr);
+    if (getsockname(this->serverFd, (struct sockaddr *)&actualAddr, &addrLen) == -1) {
+        close(this->serverFd);
+        throw std::runtime_error("Error: getsockname failed");
+    }
+
+    // Résolution du nom de l'hôte
+    char hostBuffer[NI_MAXHOST];
+    int ret = getnameinfo((struct sockaddr *)&actualAddr, sizeof(actualAddr),
+                          hostBuffer, sizeof(hostBuffer), NULL, 0, 0);
+    if (ret != 0) {
+        close(this->serverFd);
+        throw std::runtime_error(std::string("Error: ") + gai_strerror(ret));
+    }
+
+    this->hostname = std::string(hostBuffer);
 
 	makeSocketNonBlock(this->serverFd);
 	pollfd pfd = {this->serverFd, POLLIN, 0};
@@ -97,7 +115,6 @@ void Server::handleEvent(size_t &i) {
 		if (clientFd < 0)
 			throw std::runtime_error("Error: accepting new client failed");
 		if (clientFd >= 0) {
-			// char *ip = inet_ntoa(addr.sin_addr);
 			struct hostent *host = gethostbyaddr(&(addr.sin_addr), sizeof(addr.sin_addr), AF_INET);
     
 			makeSocketNonBlock(clientFd);
@@ -217,6 +234,7 @@ void Server::rmCliFromAllChan(Client *client) {
 	std::vector<Channel *>::iterator it;
 	
 	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
+		client->respond("PART #" + (*it)->getName());
 		if ((*it)->removeClient(client) == false) {
 			// Delete channel
 			delete (*it);
@@ -242,4 +260,18 @@ void Server::parseMess(std::string message) {
 		}
 		res = "";
 	}
+}
+
+std::string Server::getPrefix() {
+	return this->hostname;
+	
+	struct hostent *hostEntry = gethostbyname(this->hostname.c_str());
+	if (!hostEntry) {
+		throw std::runtime_error("Error: gethostbyname failed");
+	}
+	return hostEntry->h_name;
+}
+
+void Server::respond(Client *client, std::string message) {
+	client->write(":" + this->getPrefix() + " " + message);
 }

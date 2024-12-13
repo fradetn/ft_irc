@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 23:17:41 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/13 20:01:19 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ private:
 	std::vector<pollfd> 	pollFds;
 	std::map<int, Client*>	clients;
 	std::vector<Channel*>	channels;
+	std::string				hostname;
 	
 	std::vector<Parser>		parsedMessages;
 
@@ -56,6 +57,9 @@ private:
 	pollFdIt 	searchForFd(int fd);
 	void		parseMess(std::string message);
 	void		disconectClient(Client *client);
+	
+	void 		respond(Client *client, std::string message);
+	std::string getPrefix();
 
 public:
 

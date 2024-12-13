@@ -18,6 +18,13 @@ Channel::Channel(Client *first, std::string _name) {
 	this->limit = 0;
 }
 
+Channel::Channel(Client *first, std::string _name, std::string _key) {
+	this->name = _name;
+	this->clientList[first] = true;
+	this->key = _key;
+	this->limit = 0;
+}
+
 Channel::~Channel() {}
 
 /* -------------------------------------------------------------------------- */
@@ -55,24 +62,30 @@ bool Channel::isOneAdminInChan() {
 	return (false);
 }
 
-void Channel::addNewClient(Client *newClient, std::string _key) {
+bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
 		newClient->respond(ERR_BANNEDFROMCHAN(this->name));
-		return;
+		return (false);
 	}
 	if (this->limit != 0 && this->clientList.size() >= this->limit) {
 		newClient->respond(ERR_CHANNELISFULL(this->name));
-		return;
+		return (false);
 	}
 	if (!this->isClientInChan(newClient)) {
-		if (this->key.empty())
+		if (this->key.empty()) {
 			this->clientList[newClient] = false;
+			return (true);
+		}
 		else if (this->key == _key) {
 			this->clientList[newClient] = false;
+			return (true);
 		}
-		else
+		else {
 			newClient->respond(ERR_BADCHANNELKEY(this->name));
+			return (false);
+		}
 	}
+	return (false);
 }
 
 bool Channel::removeClient(Client *client) {
