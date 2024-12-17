@@ -27,7 +27,7 @@ void Server::handleCommands(Client *client) {
 			case CMD_UNKNOWN:
 				std::cout << "UNKNOWN" << std::endl;
 				this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
-				break;	
+				break;
 		}
 		this->parsedMessages.erase(it);
 		std::cout << std::endl;
@@ -95,7 +95,7 @@ void Server::cmdUser(Client *client, Parser cmd) {
 
 void Server::cmdQuit(Client *client, Parser cmd) {
 	std::cout << cmd.trailing << std::endl;
-	this->disconectClient(client);
+	this->disconectClient(client, RPL_QUIT(cmd.trailing));
 }
 
 /**
@@ -114,7 +114,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
 		std::cout << "Removing client from all Channels" << std::endl; 
-		this->rmCliFromAllChan(client);
+		this->rmCliFromAllChan(client, "join 0");
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
@@ -149,6 +149,9 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 			isJoined |= channel->addNewClient(client, *keysIt);
 		}
 		if (isJoined) {
+			channel = this->getChannelByName(channelName);
+			// ecrire un message dans le channel
+			channel->writeInChan(client, "JOIN #" + channelName);
 			// envoyer confirmation
 			client->respond("JOIN #" + channelName);
 		}

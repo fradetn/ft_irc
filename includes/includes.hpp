@@ -17,22 +17,32 @@
 
 class Parser;
 
+/* -------------------------------------------------------------------------- */
+/*                             Messages d'erreurs                             */
+/* -------------------------------------------------------------------------- */
+
 // Erreurs liées à l'authentification
-# define ERR_ALREADYREGISTRED(nickname)				"462 " + nickname + " :You may not reregister"
-# define ERR_PASSWDMISMATCH(nickname)				"464 " + nickname + " :Incorrect password (disconecting)"
-# define ERR_NOTREGISTERED(command)					"451 " + command + " :You have not registered"
 # define ERR_NONICKNAMEGIVEN(nickname)				"431 " + nickname + " :No nickname given"
 # define ERR_NICKNAMEINUSE(nickname, newNickname)	"433 " + nickname + " " + newNickname + " :Nickname is already in use"
-
+# define ERR_NOTREGISTERED(command)					"451 " + command + " :You have not registered"
+# define ERR_ALREADYREGISTRED(nickname)				"462 " + nickname + " :You may not reregister"
+# define ERR_PASSWDMISMATCH(nickname)				"464 " + nickname + " :Incorrect password (disconecting)"
 // Erreurs liées aux commandes
 # define ERR_UNKNOWNCOMMAND(nickname, command)		"421 " + nickname + " " + command + " :Unknown command"
 # define ERR_NEEDMOREPARAMS(nickname, command)		"461 " + nickname + " " + command + " :Not enough parameters"
-
 // Erreurs liées aux channels
-# define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+# define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
-# define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
+# define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+
+/* -------------------------------------------------------------------------- */
+/*                             Messqges de reponse                            */
+/* -------------------------------------------------------------------------- */
+
+# define RPL_WELCOME(user)							"Welcome to the Internet Relay Network " + user
+# define RPL_QUIT(reason)							"Quit :" + reason
+
 
 #ifndef BUFFUR_SIZE
 # define BUFFUR_SIZE 512

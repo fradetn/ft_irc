@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/13 20:25:34 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/16 15:00:42 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ void Server::handleEvent(size_t &i) {
 		if (byteRead <= 0) {
 			//Déconnexion
 			std::cout << "Déconnexion: " << this->pollFds[i].fd << std::endl;
-			this->disconectClient(this->clients[this->pollFds[i].fd]);
+			this->disconectClient(this->clients[this->pollFds[i].fd], "nothing");
 			// --i;
 		}
 		else {
@@ -158,7 +158,7 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 			else {
 				std::cout << "Wrong password from: " << client->getFd() << std::endl;
 				client->respond(ERR_PASSWDMISMATCH(client->getNickName()));
-				this->disconectClient(client);
+				this->disconectClient(client, "nothing");
 			}
 		}
 		else {
@@ -200,11 +200,11 @@ Channel		*Server::getChannelByName(std::string const &name) {
 	return (NULL);
 }
 
-void Server::disconectClient(Client *client) {
+void Server::disconectClient(Client *client, std::string message) {
 	pollFdIt pfdIt = searchForFd(client->getFd());
 	int fdSaved = client->getFd();
 
-	this->rmCliFromAllChan(client);
+	this->rmCliFromAllChan(client, message);
 	close(fdSaved);
 	delete this->clients[client->getFd()];
 	this->clients.erase(fdSaved);
@@ -230,11 +230,11 @@ parserIt	Server::searchForCmd(std::string cmd) {
 	return (it);
 }
 
-void Server::rmCliFromAllChan(Client *client) {
+void Server::rmCliFromAllChan(Client *client, std::string message) {
 	std::vector<Channel *>::iterator it;
 	
 	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
-		client->respond("PART #" + (*it)->getName());
+		(*it)->writeInChan(client, message);
 		if ((*it)->removeClient(client) == false) {
 			// Delete channel
 			delete (*it);

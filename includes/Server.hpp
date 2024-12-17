@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/13 20:01:19 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/16 14:50:09 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ private:
 	void		handleEvent(size_t &i);
 	void		handleClientMessage(Client *client, std::string const &message);
 	void		handleCommands(Client *client);
-	void		rmCliFromAllChan(Client *client);
+	void		rmCliFromAllChan(Client *client, std::string message);
 	
 	Client		*getClientByNick(std::string const &nickname);
 	Client		*getClientByUser(std::string const &username);
@@ -56,7 +56,7 @@ private:
 	parserIt	searchForCmd(std::string cmd);
 	pollFdIt 	searchForFd(int fd);
 	void		parseMess(std::string message);
-	void		disconectClient(Client *client);
+	void		disconectClient(Client *client, std::string message);
 	
 	void 		respond(Client *client, std::string message);
 	std::string getPrefix();
