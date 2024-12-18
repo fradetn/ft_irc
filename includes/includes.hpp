@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <fcntl.h>
+#include <signal.h>
 #include <iostream>
 #include <unistd.h>
 #include <algorithm>
@@ -16,6 +17,7 @@
 #include <netinet/in.h>
 
 class Parser;
+class Server;
 
 /* -------------------------------------------------------------------------- */
 /*                             Messages d'erreurs                             */
@@ -36,12 +38,25 @@ class Parser;
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
 # define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
 
+# define ERR_SHUTDOWN								"ERROR :Server shutting down"
+
+
+
 /* -------------------------------------------------------------------------- */
-/*                             Messqges de reponse                            */
+/*                             Messages de reponse                            */
 /* -------------------------------------------------------------------------- */
 
-# define RPL_WELCOME(user)							"Welcome to the Internet Relay Network " + user
+# define RPL_WELCOME(nickname, prefix)				"001 " + nickname + " :Welcome to the Internet Relay Network" + prefix 
+# define RPL_YOURHOST(nickname, servName, version)	"002 " + nickname + " :Your host is " + servername + ", running version " + version
+# define RPL_CREATED(nickname, date)				"003 " + nickname + " :This server was created " + date
+# define RPL_MYINFO(nickname, servName, version)	"004 " + nickname + " " + servername + " " + version + " <available user modes> <available channel modes>"
+
+# define RPL_TOPIC(nickname, channel, topic)		"332 " + nickname + " " + channel + " :" + topic
+# define RPL_NAMREPLY(nickname, channel)			"353 " + nickname + " " + channel + " :"
+# define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of NAMES list"
+
 # define RPL_QUIT(reason)							"Quit :" + reason
+# define RPL_JOIN(channel)							"JOIN :" + channel
 
 
 #ifndef BUFFUR_SIZE
@@ -63,6 +78,7 @@ enum e_cmdType {
 typedef std::vector<Parser>::iterator parserIt;
 typedef std::vector<pollfd>::iterator pollFdIt;
 
+void 						handle_shutdown(int sig);
 void 						makeSocketNonBlock(int fd);
 e_cmdType 					getCmdType(const std::string& command);
 std::vector<std::string>	split(std::string toSplit, char delim);

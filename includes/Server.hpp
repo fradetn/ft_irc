@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/16 14:50:09 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/18 17:30:02 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ private:
 	
 	std::vector<Parser>		parsedMessages;
 
-	bool					isRunning;
 	
 	//=====================//
 	//  Private Functions  //
@@ -49,6 +48,7 @@ private:
 	void		handleClientMessage(Client *client, std::string const &message);
 	void		handleCommands(Client *client);
 	void		rmCliFromAllChan(Client *client, std::string message);
+	void		shutDown();
 	
 	Client		*getClientByNick(std::string const &nickname);
 	Client		*getClientByUser(std::string const &username);
@@ -62,6 +62,8 @@ private:
 	std::string getPrefix();
 
 public:
+
+	static bool					isRunning;
 
 	Server();
 	Server(int _port, std::string _passWord);

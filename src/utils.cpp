@@ -6,11 +6,12 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 23:03:37 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/18 17:29:37 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "includes.hpp"
+#include "Server.hpp"
 
 void makeSocketNonBlock(int fd) {
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -70,4 +71,10 @@ e_cmdType getCmdType(const std::string& command) {
     if (command == "QUIT") return CMD_QUIT;
     if (command == "JOIN") return CMD_JOIN;
     return CMD_UNKNOWN;
+}
+
+void handle_shutdown(int sig) {
+    (void) sig;
+    if (Server::isRunning)
+        Server::isRunning = false;
 }

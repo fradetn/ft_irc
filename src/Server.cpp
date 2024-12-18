@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/16 15:00:42 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/18 17:33:36 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,18 @@
 #include "Parser.hpp"
 #include "Channel.hpp"
 
+bool Server::isRunning = true;
+
 Server::Server() : passWord("serveur42"), port(8080) {
 	this->serverFd = -1;
 	this->createSocket();
+	signal(SIGINT, handle_shutdown);
 }
 
 Server::Server(int _port, std::string _passWord) : passWord(_passWord), port(_port) {
 	this->serverFd = -1;
 	this->createSocket();
+	signal(SIGINT, handle_shutdown);
 }
 
 Server::~Server() {
@@ -86,8 +90,7 @@ void Server::createSocket(void) {
 
 void Server::run() {
     std::cout << "Server listening on port " << this->port << std::endl;
-	this->isRunning = true;
-	while (this->isRunning) {
+	while (Server::isRunning) {
 		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
 		if (polCount < 0) {
 			close(this->serverFd);
@@ -103,6 +106,7 @@ void Server::run() {
 			}
 		}
 	}
+	this->shutDown();
 }
 
 void Server::handleEvent(size_t &i) {
@@ -274,4 +278,12 @@ std::string Server::getPrefix() {
 
 void Server::respond(Client *client, std::string message) {
 	client->write(":" + this->getPrefix() + " " + message);
+}
+
+void Server::shutDown() {
+	std::map<int, Client *>::iterator it;
+	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
+		this->disconectClient(it->second, ERR_SHUTDOWN);
+	}
+	close(this->serverFd);
 }
