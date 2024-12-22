@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/22 21:20:54 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/22 22:04:51 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,7 +132,7 @@ void Server::handleEvent(size_t &i) {
 	}
 	else {
 		// Message recu d'un client
-		char buffer[BUFFUR_SIZE];
+		char buffer[BUFFER_SIZE];
 		int byteRead = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
 		Client *client = this->clients[this->pollFds[i].fd];
 		if (byteRead <= 0) {
@@ -159,10 +159,9 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 			std::cout <<  (*pass).params[0] << std::endl;
 			std::cout <<  (*pass).trailing << std::endl;
 			if ((*pass).params[0] == this->passWord || (*pass).trailing == this->passWord) {
-				client->setIsAuth(true);
+				// client->setIsAuth(true);
 				std::cout << "Client authentificated: " << client->getFd() << std::endl;
 				this->parsedMessages.erase(pass);
-				this->handleCommands(client);
 			}
 			else {
 				std::cout << "Wrong password from: " << client->getFd() << std::endl;
@@ -171,9 +170,7 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 				this->disconectClient(client);
 			}
 		}
-		else {
-			client->respond(ERR_NOTREGISTERED(this->parsedMessages[0].command));
-		}
+		this->handleCommands(client);
 	}
 	else {
 		// Gérer les commandes

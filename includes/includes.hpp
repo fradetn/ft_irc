@@ -63,13 +63,19 @@ class Client;
 # define RPL_JOIN(channel)							"JOIN :" + channel
 
 
-#ifndef BUFFUR_SIZE
-# define BUFFUR_SIZE 512
+#ifndef BUFFER_SIZE
+# define BUFFER_SIZE 512
 #endif
 
 #ifndef MAX_CLIENTS
 # define MAX_CLIENTS 999
 #endif
+
+
+#ifndef NB_CMD
+# define NB_CMD 4
+#endif
+
 
 enum e_cmdType {
 	CMD_NICK,
@@ -78,6 +84,8 @@ enum e_cmdType {
 	CMD_JOIN,
 	CMD_UNKNOWN
 };
+
+typedef void (Server::*cmdFunc_t)(Client *, Parser);
 
 typedef std::vector<Parser>::iterator		parserIt;
 typedef std::vector<pollfd>::iterator		pollFdIt;

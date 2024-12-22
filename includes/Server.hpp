@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/22 21:12:17 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/22 21:55:34 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,7 @@ private:
 	void		handleEvent(size_t &i);
 	void		handleClientMessage(Client *client, std::string const &message);
 	void		handleCommands(Client *client);
+	// void 		newHandleCommands(Client *client);
 	void		rmCliFromAllChan(Client *client);
 	void		shutDown();
 	

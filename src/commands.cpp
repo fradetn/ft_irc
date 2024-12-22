@@ -6,33 +6,58 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
+	std::string commandsStr[NB_CMD] = {"NICK", "USER", "QUIT", "JOIN"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin};
+
 	while (this->parsedMessages.size() >= 1) {
-		switch (getCmdType((*it).command)) {
-			case CMD_NICK:
-				std::cout << "NICK" << std::endl;
-				this->cmdNick(client, *it);
-				break;
-			case CMD_USER:
-				std::cout << "USER" << std::endl;
-				this->cmdUser(client, *it);
-				break;
-			case CMD_QUIT:
-				std::cout << "QUIT" << std::endl;
-				this->cmdQuit(client, *it);
-				break;
-			case CMD_JOIN:
-				std::cout << "JOIN" << std::endl;
-				this->cmdJoin(client, *it);
-				break;
-			case CMD_UNKNOWN:
-				std::cout << "UNKNOWN" << std::endl;
-				this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
-				break;
+		int i;
+		for (i = 0; i < NB_CMD - 1 && commandsStr[i] != (*it).command; i++){}
+		std::cout << "i = " << i << std::endl;
+		if (i > 1 && client->getIsAuth() == false) {
+			this->respond(client, ERR_NOTREGISTERED((*it).command));
+		}
+		else if (i == NB_CMD) {
+			std::cout << "UNKNOWN" << std::endl;
+			this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
+		}
+		else {
+			std::cout << commandsStr[i] << std::endl;
+			(this->*commandsFunc[i])(client, *it);
 		}
 		this->parsedMessages.erase(it);
 		std::cout << std::endl;
 	}
 }
+
+// void Server::handleCommands(Client *client) {
+// 	parserIt it = this->parsedMessages.begin();
+// 	while (this->parsedMessages.size() >= 1) {
+// 		switch (getCmdType((*it).command)) {
+// 			case CMD_NICK:
+// 				std::cout << "NICK" << std::endl;
+// 				this->cmdNick(client, *it);
+// 				break;
+// 			case CMD_USER:
+// 				std::cout << "USER" << std::endl;
+// 				this->cmdUser(client, *it);
+// 				break;
+// 			case CMD_QUIT:
+// 				std::cout << "QUIT" << std::endl;
+// 				this->cmdQuit(client, *it);
+// 				break;
+// 			case CMD_JOIN:
+// 				std::cout << "JOIN" << std::endl;
+// 				this->cmdJoin(client, *it);
+// 				break;
+// 			case CMD_UNKNOWN:
+// 				std::cout << "UNKNOWN" << std::endl;
+// 				this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
+// 				break;
+// 		}
+// 		this->parsedMessages.erase(it);
+// 		std::cout << std::endl;
+// 	}
+// }
 
 /**
  * @brief Command: NICK
@@ -48,15 +73,17 @@ void Server::cmdNick(Client *client, Parser cmd) {
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
 	}
-	std::cout << "first param: " << cmd.command << std::endl;
 	if (cmd.params[0].empty() == true) {// si le premier parametre est vide
 		std::cout << "ERR_NONICKNAMEGIVEN" << std::endl;
 		this->respond(client, ERR_NONICKNAMEGIVEN(client->getNickName()));
 		return;
 	}
 	else {
-		if (this->getClientByNick(cmd.params[0]) == NULL) // si aucun client n'a deja ce NickName
+		if (this->getClientByNick(cmd.params[0]) == NULL) {// si aucun client n'a deja ce NickName
 			client->setNickName(cmd.params[0]);
+			if (!client->getUserName().empty())
+				client->setIsAuth(true);
+		}
 		else {
 			std::cout << "ERR_NICKNAMEINUSE" << std::endl;
 			this->respond(client, ERR_NICKNAMEINUSE(client->getNickName(), cmd.params[0]));
@@ -89,8 +116,9 @@ void Server::cmdUser(Client *client, Parser cmd) {
 		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
-
 	client->setUserName(cmd.params[0]);
+	if (!client->getNickName().empty())
+		client->setIsAuth(true);
 }
 
 void Server::cmdQuit(Client *client, Parser cmd) {
