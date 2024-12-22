@@ -35,6 +35,15 @@ std::string Channel::getName() const {
 	return (this->name);
 }
 
+std::vector<Client *> Channel::getClients() const{
+	std::vector<Client *> clients;
+	std::map<Client *, bool>::const_iterator it;
+	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
+		clients.push_back((*it).first);
+	}
+	return (clients);
+}
+
 bool Channel::isClientInChan(Client *client) {
 	std::map<Client *, bool>::iterator it;
 
@@ -101,6 +110,7 @@ void Channel::writeInChan(Client *client, std::string message) {
 	// avertir tous les clients
 	std::map<Client *, bool>::iterator it;
 	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
-		it->first->write(":" + client->getPrefix() + " " + message);
+		if (client != it->first)
+			it->first->write(":" + client->getPrefix() + " " + message);
 	}
 }

@@ -25,9 +25,9 @@ void Parser::parseMessage(std::string message) {
 	this->command = message.substr(0, pos);
 	message = message.substr(pos + 1);
 
-	pos = message.find(" :");
+	pos = message.find(":");
 	if (pos != std::string::npos) {
-		this->trailing = message.substr(pos + 2);
+		this->trailing = message.substr(pos + 1);
 		message = message.substr(0, pos);
 		this->params = split(message, ' ');
         // this->params.push_back(trailing);

@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 17:16:36 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/09 17:30:48 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/22 12:45:27 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
 		// size_t pos = 0;
 		// while(getStringUntil(argv[1], res, '\n', pos)) {
 		// 	parse.parseMessage(res);
-		// 	std::cout << "line: '" << res << "'" << std::endl;
 		// }
 
 	}

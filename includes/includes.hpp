@@ -2,6 +2,7 @@
 #define INCLUDES_HPP
 
 #include <map>
+#include <set>
 #include <vector>
 #include <poll.h>
 #include <netdb.h>
@@ -18,6 +19,7 @@
 
 class Parser;
 class Server;
+class Client;
 
 /* -------------------------------------------------------------------------- */
 /*                             Messages d'erreurs                             */
@@ -56,6 +58,8 @@ class Server;
 # define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of NAMES list"
 
 # define RPL_QUIT(reason)							"Quit :" + reason
+# define RPL_PART(channel, reason)					"PART " + channel + " :" + reason
+# define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 
 
@@ -75,8 +79,9 @@ enum e_cmdType {
 	CMD_UNKNOWN
 };
 
-typedef std::vector<Parser>::iterator parserIt;
-typedef std::vector<pollfd>::iterator pollFdIt;
+typedef std::vector<Parser>::iterator		parserIt;
+typedef std::vector<pollfd>::iterator		pollFdIt;
+typedef std::map<int, Client *>::iterator	clientsIt;
 
 void 						handle_shutdown(int sig);
 void 						makeSocketNonBlock(int fd);

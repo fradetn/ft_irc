@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/18 17:33:36 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/22 21:20:54 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,8 @@ void Server::run() {
     std::cout << "Server listening on port " << this->port << std::endl;
 	while (Server::isRunning) {
 		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
+		if (!Server::isRunning)
+			continue;
 		if (polCount < 0) {
 			close(this->serverFd);
 			throw std::runtime_error("Error: poll failed");
@@ -120,7 +122,7 @@ void Server::handleEvent(size_t &i) {
 			throw std::runtime_error("Error: accepting new client failed");
 		if (clientFd >= 0) {
 			struct hostent *host = gethostbyaddr(&(addr.sin_addr), sizeof(addr.sin_addr), AF_INET);
-    
+
 			makeSocketNonBlock(clientFd);
 			pollfd pfd = {clientFd, POLLIN, 0};
 			this->pollFds.push_back(pfd);
@@ -132,16 +134,17 @@ void Server::handleEvent(size_t &i) {
 		// Message recu d'un client
 		char buffer[BUFFUR_SIZE];
 		int byteRead = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
+		Client *client = this->clients[this->pollFds[i].fd];
 		if (byteRead <= 0) {
-			//Déconnexion
+			//Déconnexion;
 			std::cout << "Déconnexion: " << this->pollFds[i].fd << std::endl;
-			this->disconectClient(this->clients[this->pollFds[i].fd], "nothing");
-			// --i;
+			this->clients.erase(searchForClient(client));
+			this->disconectClient(client);
 		}
 		else {
 			buffer[byteRead] = '\0';
 			std::cout << "Message from: " << this->pollFds[i].fd << std::endl;
-			this->handleClientMessage(this->clients[this->pollFds[i].fd], buffer);
+			this->handleClientMessage(client, buffer);
 		}
 	}
 }
@@ -153,16 +156,19 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 		parserIt pass = this->searchForCmd("PASS");
 		// std::cout << "pass: '" << this->passWord << "'" << std::endl;
 		if (pass != this->parsedMessages.end() ) {
-			if ((*pass).params[0] == this->passWord) {
+			std::cout <<  (*pass).params[0] << std::endl;
+			std::cout <<  (*pass).trailing << std::endl;
+			if ((*pass).params[0] == this->passWord || (*pass).trailing == this->passWord) {
 				client->setIsAuth(true);
 				std::cout << "Client authentificated: " << client->getFd() << std::endl;
 				this->parsedMessages.erase(pass);
-				this->handleCommands(client);				
+				this->handleCommands(client);
 			}
 			else {
 				std::cout << "Wrong password from: " << client->getFd() << std::endl;
 				client->respond(ERR_PASSWDMISMATCH(client->getNickName()));
-				this->disconectClient(client, "nothing");
+				this->clients.erase(searchForClient(client));
+				this->disconectClient(client);
 			}
 		}
 		else {
@@ -173,6 +179,17 @@ void Server::handleClientMessage(Client *client, std::string const &message) {
 		// Gérer les commandes
 		this->handleCommands(client);
 	}
+}
+
+void Server::shutDown() {
+	std::map<int, Client *>::iterator it;
+	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
+		it->second->respond(ERR_SHUTDOWN);
+		this->disconectClient(it->second);
+	}
+	close(this->serverFd);
+	this->clients.clear();
+	std::cout << std::endl;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -204,14 +221,12 @@ Channel		*Server::getChannelByName(std::string const &name) {
 	return (NULL);
 }
 
-void Server::disconectClient(Client *client, std::string message) {
+void Server::disconectClient(Client *client) {
 	pollFdIt pfdIt = searchForFd(client->getFd());
-	int fdSaved = client->getFd();
-
-	this->rmCliFromAllChan(client, message);
-	close(fdSaved);
-	delete this->clients[client->getFd()];
-	this->clients.erase(fdSaved);
+	
+	this->rmCliFromAllChan(client);
+	close(client->getFd());
+	delete client;
 	if (pfdIt != this->pollFds.end())
 		this->pollFds.erase(pfdIt);
 }
@@ -234,11 +249,20 @@ parserIt	Server::searchForCmd(std::string cmd) {
 	return (it);
 }
 
-void Server::rmCliFromAllChan(Client *client, std::string message) {
+clientsIt Server::searchForClient(Client *client) {
+	clientsIt it;
+	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
+		if (it->second == client)
+			return (it);
+	}
+	return (it);
+}
+
+void Server::rmCliFromAllChan(Client *client) {
 	std::vector<Channel *>::iterator it;
 	
 	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
-		(*it)->writeInChan(client, message);
+		// (*it)->writeInChan(client, message);
 		if ((*it)->removeClient(client) == false) {
 			// Delete channel
 			delete (*it);
@@ -276,14 +300,18 @@ std::string Server::getPrefix() {
 	return hostEntry->h_name;
 }
 
-void Server::respond(Client *client, std::string message) {
-	client->write(":" + this->getPrefix() + " " + message);
+std::set<Client *> Server::getChanCommonUsers() {
+	std::set<Client *> common;
+	std::vector<Client *> cli;
+	std::vector<Channel *>::iterator chanIt;
+
+	for (chanIt = this->channels.begin(); chanIt != this->channels.end(); ++chanIt) {
+		cli = (*chanIt)->getClients();
+		common.insert(cli.begin(), cli.end());
+	}
+	return (common);	
 }
 
-void Server::shutDown() {
-	std::map<int, Client *>::iterator it;
-	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
-		this->disconectClient(it->second, ERR_SHUTDOWN);
-	}
-	close(this->serverFd);
+void Server::respond(Client *client, std::string message) {
+	client->write(":" + this->getPrefix() + " " + message);
 }

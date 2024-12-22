@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/16 14:43:39 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/22 18:41:37 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ public:
 	~Channel();
 	
 	std::string getName() const;
+	std::vector<Client *> getClients() const;
 
 	void writeInChan(Client *client, std::string message);
 	

@@ -95,7 +95,13 @@ void Server::cmdUser(Client *client, Parser cmd) {
 
 void Server::cmdQuit(Client *client, Parser cmd) {
 	std::cout << cmd.trailing << std::endl;
-	this->disconectClient(client, RPL_QUIT(cmd.trailing));
+
+	std::set<Client *> commonUsers = this->getChanCommonUsers();
+	for (std::set<Client *>::iterator it = commonUsers.begin(); it != commonUsers.end(); ++it)
+		(*it)->write(":" + client->getPrefix() + " " + RPL_QUIT(cmd.trailing));
+	this->clients.erase(searchForClient(client));
+	this->disconectClient(client);
+	commonUsers.clear();
 }
 
 /**
@@ -113,8 +119,12 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	bool isJoined;
 
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
-		std::cout << "Removing client from all Channels" << std::endl; 
-		this->rmCliFromAllChan(client, "join 0");
+		std::cout << "Removing client from all Channels" << std::endl;
+		std::vector<Channel *>::iterator it;
+		for (it = this->channels.begin(); it != this->channels.end(); ++it) {
+			(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
+		}
+		this->rmCliFromAllChan(client);
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
