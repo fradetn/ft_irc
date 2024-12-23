@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 11:22:26 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/23 17:26:31 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,24 +45,31 @@ private:
 
 	void		createSocket(void);
 	void		handleEvent(size_t &i);
-	// void		handleClientMessage(Client *client, std::string const &message);
 	void		handleCommands(Client *client);
-	// void 		newHandleCommands(Client *client);
-	void		rmCliFromAllChan(Client *client);
 	void		shutDown();
+	void		disconectClient(Client *client);
+	void		rmCliFromAllChan(Client *client);
+	void 		respond(Client *client, std::string message);
 	
-	std::set<Client *> getChanCommonUsers();
+	
+	//=====================//
+	//	   Server Utils	   //
+	//=====================//
+	
+	std::set<Client *> getChanCommonUsers(Client *client);
+	void		sendMessToAllCommonUsers(Client *client, std::string message);
+
 	Client		*getClientByNick(std::string const &nickname);
 	Client		*getClientByUser(std::string const &username);
 	Channel		*getChannelByName(std::string const &name);
+	std::string getPrefix();
+	
 	clientsIt 	searchForClient(Client *client);
+	channelIt 	searchForChannel(Channel *channel);
 	parserIt	searchForCmd(std::string cmd);
 	pollFdIt 	searchForFd(int fd);
-	void		parseMess(std::string message);
-	void		disconectClient(Client *client);
 	
-	void 		respond(Client *client, std::string message);
-	std::string getPrefix();
+	void		parseMess(std::string message);
 
 public:
 
@@ -77,12 +84,13 @@ public:
 	//============//
 	//  COMMANDS  //
 	//============//
-	
+
 	void cmdPass(Client *client, Parser cmd);
 	void cmdNick(Client *client, Parser cmd);
 	void cmdUser(Client *client, Parser cmd);
 	void cmdQuit(Client *client, Parser cmd);
 	void cmdJoin(Client *client, Parser cmd);
+	void cmdPart(Client *client, Parser cmd);
 
 };
 

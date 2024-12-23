@@ -16,6 +16,7 @@ OBJ_DIR	=	obj/
 SRC		 =		main.cpp 		\
 				utils.cpp		\
 				Server.cpp		\
+				serverUtils.cpp		\
 				Client.cpp		\
 				Channel.cpp		\
 				commands.cpp	\

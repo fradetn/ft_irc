@@ -20,6 +20,7 @@
 class Parser;
 class Server;
 class Client;
+class Channel;
 
 /* -------------------------------------------------------------------------- */
 /*                             Messages d'erreurs                             */
@@ -36,19 +37,18 @@ class Client;
 # define ERR_NEEDMOREPARAMS(nickname, command)		"461 " + nickname + " " + command + " :Not enough parameters"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
+# define ERR_NOTONCHANNEL(channel)					"442 " + channel + " :You're not on that channel"
 # define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
 # define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
 
 # define ERR_SHUTDOWN								"ERROR :Server shutting down"
 
-
-
 /* -------------------------------------------------------------------------- */
 /*                             Messages de reponse                            */
 /* -------------------------------------------------------------------------- */
 
-# define RPL_WELCOME(nickname, prefix)				"001 " + nickname + " :Welcome to the Internet Relay Network" + prefix 
+# define RPL_WELCOME(nickname, prefix)				"001 " + nickname + " :Welcome to the Internet Relay Network " + prefix 
 # define RPL_YOURHOST(nickname, servName, version)	"002 " + nickname + " :Your host is " + servername + ", running version " + version
 # define RPL_CREATED(nickname, date)				"003 " + nickname + " :This server was created " + date
 # define RPL_MYINFO(nickname, servName, version)	"004 " + nickname + " " + servername + " " + version + " <available user modes> <available channel modes>"
@@ -57,10 +57,12 @@ class Client;
 # define RPL_NAMREPLY(nickname, channel)			"353 " + nickname + " " + channel + " :"
 # define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of NAMES list"
 
-# define RPL_QUIT(reason)							"Quit :" + reason
-# define RPL_PART(channel, reason)					"PART " + channel + " :" + reason
+# define RPL_QUIT(nickname, reason)					":" + nickname + " QUIT :" + reason
+# define RPL_PART(channel, reason)					"PART " + channel + " " + reason
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
+# define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
+
 
 # define DEFAULT	"\033[0m"
 # define RED		"\033[31m"
@@ -80,13 +82,14 @@ class Client;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 5
+# define NB_CMD 6
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);
 
 typedef std::vector<Parser>::iterator		parserIt;
 typedef std::vector<pollfd>::iterator		pollFdIt;
+typedef std::vector<Channel *>::iterator	channelIt;
 typedef std::map<int, Client *>::iterator	clientsIt;
 
 void 						handle_shutdown(int sig);

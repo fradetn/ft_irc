@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -15,14 +15,13 @@ void Server::handleCommands(Client *client) {
 		// std::cout << "i = " << i << std::endl;
 		if ((i == 1 ||i == 2) && !client->getIsLog()) {
 			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
-			return (this->respond(client, ERR_NOTREGISTERED((*it).command)));
+			this->respond(client, ERR_NOTREGISTERED((*it).command));
 		}
-		if (i > 2 && client->getIsAuth() == false) {
+		else if (i > 2 && client->getIsAuth() == false) {
 			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
-			return (this->respond(client, ERR_NOTREGISTERED((*it).command)));
+			this->respond(client, ERR_NOTREGISTERED((*it).command));
 		}
-
-		if (i == NB_CMD) {
+		else if (i == NB_CMD) {
 			std::cout << RED"ERR_UNKNOWNCOMMAND"DEFAULT << std::endl;
 			this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
 		}
@@ -63,6 +62,7 @@ void Server::cmdPass(Client *client, Parser cmd) {
  * @param cmd Parsed command line
  */
 void Server::cmdNick(Client *client, Parser cmd) {
+	std::string oldNick = client->getNickName();
 	if (cmd.params.empty()) { // si aucun parametres
 		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
@@ -79,8 +79,11 @@ void Server::cmdNick(Client *client, Parser cmd) {
 			std::cout << GREEN"New nickname set: "DEFAULT << client->getNickName() << std::endl;
 			if (!client->getUserName().empty() && !client->getIsAuth()) {
 				std::cout << GREEN"Client on socket "DEFAULT << client->getFd() << GREEN" is now authentificated"DEFAULT << std::endl;
+				this->respond(client, RPL_WELCOME(client->getNickName(), client->getPrefix()));
 				client->setIsAuth(true);
 			}
+		else
+			this->sendMessToAllCommonUsers(client, RPL_NICK(oldNick, client->getNickName()));
 		}
 		else {
 			std::cout << RED"ERR_NICKNAMEINUSE"DEFAULT << std::endl;
@@ -118,6 +121,7 @@ void Server::cmdUser(Client *client, Parser cmd) {
 	std::cout << GREEN"New username set: "DEFAULT << client->getUserName() << std::endl;
 	if (!client->getNickName().empty() && !client->getIsAuth()) {
 		std::cout << GREEN"Client on socket "DEFAULT << client->getFd() << GREEN" is now authentificated"DEFAULT << std::endl;
+		this->respond(client, RPL_WELCOME(client->getNickName(), client->getPrefix()));
 		client->setIsAuth(true);
 	}
 }
@@ -125,12 +129,9 @@ void Server::cmdUser(Client *client, Parser cmd) {
 void Server::cmdQuit(Client *client, Parser cmd) {
 	std::cout << cmd.trailing << std::endl;
 
-	std::set<Client *> commonUsers = this->getChanCommonUsers();
-	for (std::set<Client *>::iterator it = commonUsers.begin(); it != commonUsers.end(); ++it)
-		(*it)->write(":" + client->getPrefix() + " " + RPL_QUIT(cmd.trailing));
+	this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), cmd.trailing));
 	this->clients.erase(searchForClient(client));
 	this->disconectClient(client);
-	commonUsers.clear();
 }
 
 /**
@@ -151,7 +152,8 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		std::cout << RED"Removing client from all Channels"DEFAULT << std::endl;
 		std::vector<Channel *>::iterator it;
 		for (it = this->channels.begin(); it != this->channels.end(); ++it) {
-			(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
+			if ((*it)->isClientInChan(client))
+				(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
 		}
 		this->rmCliFromAllChan(client);
 		return;
@@ -171,10 +173,10 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	std::vector<std::string>::iterator chanIt;
 
 	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
-		std::string channelName = (*chanIt)[0] == '#' ? (*chanIt).substr(1) : "";
-		if (channelName == "") {
+		std::string channelName = (*chanIt);
+		if (channelName[0] != '#') {
 			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
-			return (this->respond(client, ERR_NOSUCHCHANNEL(*chanIt)));
+			return (this->respond(client, ERR_NOSUCHCHANNEL(channelName)));
 		}
 		Channel *channel = this->getChannelByName(channelName);
 		if (channel == NULL) { // si le channel n'existe pas, on le créer avec le client comme admin
@@ -190,9 +192,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		if (isJoined) {
 			channel = this->getChannelByName(channelName);
 			// ecrire un message dans le channel
-			channel->writeInChan(client, "JOIN #" + channelName);
-			// envoyer confirmation
-			this->respond(client, "JOIN #" + channelName);
+			channel->writeInChan(client, RPL_JOIN(channelName));
 		}
 		if (keysIt != keys.end())
 			keysIt++;
@@ -202,5 +202,36 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	std::vector<Channel *>::iterator it;
 
 	for (it = this->channels.begin(); it != this->channels.end(); ++it)
-		std::cout << "#" + (*it)->getName() << std::endl;
+		std::cout << (*it)->getName() << std::endl;
+}
+
+void Server::cmdPart(Client *client, Parser cmd) {
+	if (cmd.params.empty() || cmd.params.size() > 1) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		return this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+	}
+
+	std::vector<std::string> chans = split(cmd.params[0], ',');
+	std::vector<std::string>::iterator chanIt;
+
+	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
+		std::string channelName = (*chanIt);
+		Channel *channel = getChannelByName(channelName);
+		if (channelName.empty() || channel == NULL) {
+			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+			this->respond(client, ERR_NOSUCHCHANNEL((*chanIt)));
+		}
+		else if (channel != NULL && !channel->isClientInChan(client)) {
+			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+			this->respond(client, ERR_NOSUCHCHANNEL((*chanIt)));
+		}
+		else {
+			channel->writeInChan(client, RPL_PART(channel->getName(), cmd.trailing));
+			if (channel->removeClient(client) == false) {
+				this->channels.erase(this->searchForChannel(channel));
+				delete (channel);
+			}
+
+		}
+	}
 }

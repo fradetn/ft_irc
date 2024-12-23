@@ -100,8 +100,8 @@ bool Channel::addNewClient(Client *newClient, std::string _key) {
 bool Channel::removeClient(Client *client) {
 	if (this->isClientInChan(client) == true) {
 		this->clientList.erase(client);
-		if (this->isOneAdminInChan() == false)
-			return (false); // Return false si le client etait le seul admin du channel
+		if (this->clientList.empty())
+			return (false); // Return false si le client etait le dernier du channel
 	}
 	return (true);
 }
@@ -110,7 +110,7 @@ void Channel::writeInChan(Client *client, std::string message) {
 	// avertir tous les clients
 	std::map<Client *, bool>::iterator it;
 	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
-		if (client != it->first)
-			it->first->write(":" + client->getPrefix() + " " + message);
+		// if (client != it->first)
+		it->first->write(":" + client->getPrefix() + " " + message);
 	}
 }

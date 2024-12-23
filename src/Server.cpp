@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 12:15:07 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/23 17:28:54 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void Server::createSocket(void) {
 	this->serverFd = socket(AF_INET, SOCK_STREAM, 0);
 	 if (this->serverFd < 0) {
 		throw std::runtime_error("Error: socket creation failed");
-    }
+	}
 
 	int opt = 1;
 	if (setsockopt(this->serverFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
@@ -53,7 +53,7 @@ void Server::createSocket(void) {
 	sockaddr_in serverAddr;
 	std::memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = INADDR_ANY;
+	serverAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	serverAddr.sin_port = htons(this->port);
 
 	if (bind(this->serverFd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
@@ -64,24 +64,24 @@ void Server::createSocket(void) {
 		close(this->serverFd);
 		throw std::runtime_error("Error: listen failed");
 	}
-	    // Récupérer l'adresse réelle liée au socket
-    sockaddr_in actualAddr;
-    socklen_t addrLen = sizeof(actualAddr);
-    if (getsockname(this->serverFd, (struct sockaddr *)&actualAddr, &addrLen) == -1) {
-        close(this->serverFd);
-        throw std::runtime_error("Error: getsockname failed");
-    }
+		// Récupérer l'adresse réelle liée au socket
+	sockaddr_in actualAddr;
+	socklen_t addrLen = sizeof(actualAddr);
+	if (getsockname(this->serverFd, (struct sockaddr *)&actualAddr, &addrLen) == -1) {
+		close(this->serverFd);
+		throw std::runtime_error("Error: getsockname failed");
+	}
 
-    // Résolution du nom de l'hôte
-    char hostBuffer[NI_MAXHOST];
-    int ret = getnameinfo((struct sockaddr *)&actualAddr, sizeof(actualAddr),
-                          hostBuffer, sizeof(hostBuffer), NULL, 0, 0);
-    if (ret != 0) {
-        close(this->serverFd);
-        throw std::runtime_error(std::string("Error: ") + gai_strerror(ret));
-    }
+	// Résolution du nom de l'hôte
+	char hostBuffer[NI_MAXHOST];
+	int ret = getnameinfo((struct sockaddr *)&actualAddr, sizeof(actualAddr),
+							hostBuffer, sizeof(hostBuffer), NULL, 0, 0);
+	if (ret != 0) {
+		close(this->serverFd);
+		throw std::runtime_error(std::string("Error: ") + gai_strerror(ret));
+	}
 
-    this->hostname = std::string(hostBuffer);
+	this->hostname = std::string(hostBuffer);
 
 	makeSocketNonBlock(this->serverFd);
 	pollfd pfd = {this->serverFd, POLLIN, 0};
@@ -89,7 +89,7 @@ void Server::createSocket(void) {
 }
 
 void Server::run() {
-    std::cout << GREEN"Server listening on port "DEFAULT << this->port << std::endl;
+	std::cout << GREEN"Server listening on port "DEFAULT << this->port << std::endl;
 	while (Server::isRunning) {
 		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
 		if (!Server::isRunning)
@@ -137,14 +137,14 @@ void Server::handleEvent(size_t &i) {
 		Client *client = this->clients[this->pollFds[i].fd];
 		if (byteRead <= 0) {
 			//Déconnexion;
+			this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), "Leaving"));
 			this->clients.erase(searchForClient(client));
 			this->disconectClient(client);
 		}
 		else {
 			buffer[byteRead] = '\0';
 			std::cout << GREEN"Message received from socket: "DEFAULT << this->pollFds[i].fd << std::endl;
-			// this->handleClientMessage(client, buffer);
-			std::cout << GREEN"message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
+			std::cout << GREEN"Message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
 			this->parseMess(buffer);
 			this->handleCommands(client);
 		}
@@ -154,41 +154,12 @@ void Server::handleEvent(size_t &i) {
 void Server::shutDown() {
 	std::map<int, Client *>::iterator it;
 	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
-		it->second->respond(ERR_SHUTDOWN);
+		this->respond(it->second, ERR_SHUTDOWN);
 		this->disconectClient(it->second);
 	}
 	close(this->serverFd);
 	this->clients.clear();
 	std::cout << std::endl;
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                    Utils                                   */
-/* -------------------------------------------------------------------------- */
-
-Client		*Server::getClientByNick(std::string const &nickname) {
-	std::map<int, Client *>::iterator it;
-
-	for (it = this->clients.begin(); it != this->clients.end(); ++it)
-		if (nickname == (*it).second->getNickName())
-			return ((*it).second);
-	return (NULL);
-}
-Client		*Server::getClientByUser(std::string const &username) {
-	std::map<int, Client *>::iterator it;
-
-	for (it = this->clients.begin(); it != this->clients.end(); ++it)
-		if (username == (*it).second->getUserName())
-			return ((*it).second);
-	return (NULL);
-}
-Channel		*Server::getChannelByName(std::string const &name) {
-	std::vector<Channel *>::iterator it;
-	
-	for (it = this->channels.begin(); it != this->channels.end(); ++it)
-		if ((*it)->getName() == name)
-			return ((*it));
-	return (NULL);
 }
 
 void Server::disconectClient(Client *client) {
@@ -201,38 +172,10 @@ void Server::disconectClient(Client *client) {
 		this->pollFds.erase(pfdIt);
 }
 
-pollFdIt Server::searchForFd(int fd) {
-	pollFdIt it;
-	for (it = this->pollFds.begin(); it != this->pollFds.end(); ++it) {
-		if (it->fd == fd)
-			return (it);
-	}
-	return (it);
-}
-
-parserIt	Server::searchForCmd(std::string cmd) {
-	parserIt it;
-	for (it = this->parsedMessages.begin(); it != this->parsedMessages.end(); ++it) {
-		if (it->command == cmd)
-			return (it);
-	}
-	return (it);
-}
-
-clientsIt Server::searchForClient(Client *client) {
-	clientsIt it;
-	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
-		if (it->second == client)
-			return (it);
-	}
-	return (it);
-}
-
 void Server::rmCliFromAllChan(Client *client) {
 	std::vector<Channel *>::iterator it;
 	
 	for (it = this->channels.begin(); it != this->channels.end(); ++it) {
-		// (*it)->writeInChan(client, message);
 		if ((*it)->removeClient(client) == false) {
 			// Delete channel
 			delete (*it);
@@ -242,46 +185,6 @@ void Server::rmCliFromAllChan(Client *client) {
 	}
 }
 
-void Server::parseMess(std::string message) {
-	size_t		pos = 0;
-	std::string	res;
-	Parser		parsed;
-
-	if (!this->parsedMessages.empty())
-		this->parsedMessages.clear();
-
-	message.erase(std::remove(message.begin(), message.end(), '\r'), message.end());
-	while (getStringUntil(message, res, '\n', pos)) {
-		if (res != "") {
-			parsed.parseMessage(res);
-			this->parsedMessages.push_back(parsed);
-		}
-		res = "";
-	}
-}
-
-std::string Server::getPrefix() {
-	return this->hostname;
-	
-	struct hostent *hostEntry = gethostbyname(this->hostname.c_str());
-	if (!hostEntry) {
-		throw std::runtime_error("Error: gethostbyname failed");
-	}
-	return hostEntry->h_name;
-}
-
-std::set<Client *> Server::getChanCommonUsers() {
-	std::set<Client *> common;
-	std::vector<Client *> cli;
-	std::vector<Channel *>::iterator chanIt;
-
-	for (chanIt = this->channels.begin(); chanIt != this->channels.end(); ++chanIt) {
-		cli = (*chanIt)->getClients();
-		common.insert(cli.begin(), cli.end());
-	}
-	return (common);	
-}
-
 void Server::respond(Client *client, std::string message) {
-	client->write(":" + this->getPrefix() + " " + message);
+	client->write(message);
 }
