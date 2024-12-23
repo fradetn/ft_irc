@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/11 17:47:42 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/23 10:48:45 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ private:
 	std::string	userName;
 	std::string	hostName;
 	bool		isAuth;
+	bool		isLog;
 
 public:
 	Client();
@@ -35,12 +36,14 @@ public:
 	std::string getUserName() const;
 	std::string getHostName() const;
 	bool getIsAuth() const;
+	bool getIsLog() const;
 
 	void setFd(int _fd);
 	void setNickName(std::string _nickName);
 	void setUserName(std::string _userName);
 	// void setHostName(std::string _hostname);
 	void setIsAuth(bool _isAuth);
+	void setIsLog(bool _isLog);
 	
 	std::string getPrefix() const;
 	void write(std::string const &message) const;

@@ -62,6 +62,14 @@ class Client;
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 
+# define DEFAULT	"\033[0m"
+# define RED		"\033[31m"
+# define GREEN		"\033[32m"
+# define YELLOW		"\033[33m"
+# define BLUE		"\033[34m"
+# define MAGENTA	"\033[35m"
+# define CYAN		"\033[36m"
+# define WHITE		"\033[37m"
 
 #ifndef BUFFER_SIZE
 # define BUFFER_SIZE 512
@@ -71,19 +79,9 @@ class Client;
 # define MAX_CLIENTS 999
 #endif
 
-
 #ifndef NB_CMD
-# define NB_CMD 4
+# define NB_CMD 5
 #endif
-
-
-enum e_cmdType {
-	CMD_NICK,
-	CMD_USER,
-	CMD_QUIT,
-	CMD_JOIN,
-	CMD_UNKNOWN
-};
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);
 
@@ -93,18 +91,7 @@ typedef std::map<int, Client *>::iterator	clientsIt;
 
 void 						handle_shutdown(int sig);
 void 						makeSocketNonBlock(int fd);
-e_cmdType 					getCmdType(const std::string& command);
 std::vector<std::string>	split(std::string toSplit, char delim);
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos);
-
-// template <typename T>
-// bool searchInVector(std::vector<T> vector, T param) {
-// 	std::vector<T>::iterator it;
-// 	for (it = vector.begin(); it != vector.end(); ++it) {
-// 		if (it->fd == fd)
-// 			return (it);
-// 	}
-// 	return (it);
-// };
 
 #endif

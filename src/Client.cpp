@@ -10,6 +10,7 @@ Client::Client() {
 	this->nickName = "";
 	this->userName = "";
 	this->isAuth = false;
+	this->isLog = false;
 }
 
 Client::Client(int _fd, std::string const &_hostname) {
@@ -18,6 +19,7 @@ Client::Client(int _fd, std::string const &_hostname) {
 	this->userName = "";
 	this->hostName = _hostname;
 	this->isAuth = false;
+	this->isLog = false;
 }
 
 Client::~Client() {
@@ -39,6 +41,9 @@ std::string Client::getUserName() const {
 bool Client::getIsAuth() const {
 	return (this->isAuth);
 }
+bool Client::getIsLog() const {
+	return (this->isLog);
+}
 
 std::string Client::getHostName() const {
 	return (this->hostName);
@@ -55,6 +60,9 @@ void Client::setUserName(std::string _userName) {
 }
 void Client::setIsAuth(bool _isAuth) {
 	this->isAuth = _isAuth;
+}
+void Client::setIsLog(bool _isLog) {
+	this->isLog = _isLog;
 }
 
 /* -------------------------------------------------------------------------- */

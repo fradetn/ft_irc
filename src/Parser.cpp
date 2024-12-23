@@ -22,8 +22,14 @@ void Parser::parseMessage(std::string message) {
 		message = message.substr(pos + 1);
 	}
 	pos = message.find(' ');
-	this->command = message.substr(0, pos);
-	message = message.substr(pos + 1);
+	if (pos == std::string::npos) {
+		this->command = message.substr(0, message.find('\n'));
+		message = "";
+	}
+	else {
+		this->command = message.substr(0, pos);
+		message = message.substr(pos + 1);
+	}
 
 	pos = message.find(":");
 	if (pos != std::string::npos) {

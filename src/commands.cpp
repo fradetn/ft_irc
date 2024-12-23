@@ -6,22 +6,28 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"NICK", "USER", "QUIT", "JOIN"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
-		for (i = 0; i < NB_CMD - 1 && commandsStr[i] != (*it).command; i++){}
-		std::cout << "i = " << i << std::endl;
-		if (i > 1 && client->getIsAuth() == false) {
-			this->respond(client, ERR_NOTREGISTERED((*it).command));
+		for (i = 0; i < NB_CMD && commandsStr[i] != (*it).command; i++){}
+		// std::cout << "i = " << i << std::endl;
+		if ((i == 1 ||i == 2) && !client->getIsLog()) {
+			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
+			return (this->respond(client, ERR_NOTREGISTERED((*it).command)));
 		}
-		else if (i == NB_CMD) {
-			std::cout << "UNKNOWN" << std::endl;
+		if (i > 2 && client->getIsAuth() == false) {
+			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
+			return (this->respond(client, ERR_NOTREGISTERED((*it).command)));
+		}
+
+		if (i == NB_CMD) {
+			std::cout << RED"ERR_UNKNOWNCOMMAND"DEFAULT << std::endl;
 			this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
 		}
 		else {
-			std::cout << commandsStr[i] << std::endl;
+			// std::cout << commandsStr[i] << std::endl;
 			(this->*commandsFunc[i])(client, *it);
 		}
 		this->parsedMessages.erase(it);
@@ -29,35 +35,24 @@ void Server::handleCommands(Client *client) {
 	}
 }
 
-// void Server::handleCommands(Client *client) {
-// 	parserIt it = this->parsedMessages.begin();
-// 	while (this->parsedMessages.size() >= 1) {
-// 		switch (getCmdType((*it).command)) {
-// 			case CMD_NICK:
-// 				std::cout << "NICK" << std::endl;
-// 				this->cmdNick(client, *it);
-// 				break;
-// 			case CMD_USER:
-// 				std::cout << "USER" << std::endl;
-// 				this->cmdUser(client, *it);
-// 				break;
-// 			case CMD_QUIT:
-// 				std::cout << "QUIT" << std::endl;
-// 				this->cmdQuit(client, *it);
-// 				break;
-// 			case CMD_JOIN:
-// 				std::cout << "JOIN" << std::endl;
-// 				this->cmdJoin(client, *it);
-// 				break;
-// 			case CMD_UNKNOWN:
-// 				std::cout << "UNKNOWN" << std::endl;
-// 				this->respond(client, ERR_UNKNOWNCOMMAND(client->getNickName(), (*it).command));
-// 				break;
-// 		}
-// 		this->parsedMessages.erase(it);
-// 		std::cout << std::endl;
-// 	}
-// }
+void Server::cmdPass(Client *client, Parser cmd) {
+	// std::cout <<  cmd.params[0] << std::endl;
+	// std::cout <<  cmd.trailing << std::endl;
+	if (client->getIsLog() == true) {
+		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
+		return (this->respond(client, ERR_ALREADYREGISTRED(client->getNickName())));
+	}
+	if (cmd.params[0] == this->passWord || cmd.trailing == this->passWord) {
+		client->setIsLog(true);
+		std::cout << GREEN"Client logged: "DEFAULT << client->getFd() << std::endl;
+	}
+	else {
+		std::cout << "Wrong password from: " << client->getFd() << std::endl;
+		this->respond(client, ERR_PASSWDMISMATCH(client->getNickName()));
+		this->clients.erase(searchForClient(client));
+		this->disconectClient(client);
+	}
+}
 
 /**
  * @brief Command: NICK
@@ -69,23 +64,26 @@ void Server::handleCommands(Client *client) {
  */
 void Server::cmdNick(Client *client, Parser cmd) {
 	if (cmd.params.empty()) { // si aucun parametres
-		std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
 	}
 	if (cmd.params[0].empty() == true) {// si le premier parametre est vide
-		std::cout << "ERR_NONICKNAMEGIVEN" << std::endl;
+		std::cout << RED"ERR_NONICKNAMEGIVEN"DEFAULT << std::endl;
 		this->respond(client, ERR_NONICKNAMEGIVEN(client->getNickName()));
 		return;
 	}
 	else {
 		if (this->getClientByNick(cmd.params[0]) == NULL) {// si aucun client n'a deja ce NickName
 			client->setNickName(cmd.params[0]);
-			if (!client->getUserName().empty())
+			std::cout << GREEN"New nickname set: "DEFAULT << client->getNickName() << std::endl;
+			if (!client->getUserName().empty() && !client->getIsAuth()) {
+				std::cout << GREEN"Client on socket "DEFAULT << client->getFd() << GREEN" is now authentificated"DEFAULT << std::endl;
 				client->setIsAuth(true);
+			}
 		}
 		else {
-			std::cout << "ERR_NICKNAMEINUSE" << std::endl;
+			std::cout << RED"ERR_NICKNAMEINUSE"DEFAULT << std::endl;
 			this->respond(client, ERR_NICKNAMEINUSE(client->getNickName(), cmd.params[0]));
 		}
 	}
@@ -100,25 +98,28 @@ void Server::cmdNick(Client *client, Parser cmd) {
  * @param cmd Parsed command line
  */
 void Server::cmdUser(Client *client, Parser cmd) {
-	std::cout << "first param: " << cmd.params[0] << std::endl;
+	// std::cout << "first param: " << cmd.params[0] << std::endl;
 	if (cmd.params.size() < 3 || cmd.trailing.empty()) {
-			std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
 	}
 	else if (client->getUserName().empty() == false){
-		std::cout << "ERR_ALREADYREGISTRED" << std::endl;
+		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
 		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
 	else if (this->getClientByUser(cmd.params[0]) != NULL) { // si ce UserName est deja pris
-		std::cout << "ERR_ALREADYREGISTRED" << std::endl;
+		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
 		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
 	client->setUserName(cmd.params[0]);
-	if (!client->getNickName().empty())
+	std::cout << GREEN"New username set: "DEFAULT << client->getUserName() << std::endl;
+	if (!client->getNickName().empty() && !client->getIsAuth()) {
+		std::cout << GREEN"Client on socket "DEFAULT << client->getFd() << GREEN" is now authentificated"DEFAULT << std::endl;
 		client->setIsAuth(true);
+	}
 }
 
 void Server::cmdQuit(Client *client, Parser cmd) {
@@ -147,7 +148,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	bool isJoined;
 
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
-		std::cout << "Removing client from all Channels" << std::endl;
+		std::cout << RED"Removing client from all Channels"DEFAULT << std::endl;
 		std::vector<Channel *>::iterator it;
 		for (it = this->channels.begin(); it != this->channels.end(); ++it) {
 			(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
@@ -156,7 +157,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
-		std::cout << "ERR_NEEDMOREPARAMS" << std::endl;
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
 	}
@@ -172,8 +173,8 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 	for (chanIt = chans.begin(); chanIt != chans.end(); ++chanIt) {
 		std::string channelName = (*chanIt)[0] == '#' ? (*chanIt).substr(1) : "";
 		if (channelName == "") {
-			std::cout << "ERR_NOSUCHCHANNEL" << std::endl;
-			return (client->respond(ERR_NOSUCHCHANNEL(*chanIt)));
+			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+			return (this->respond(client, ERR_NOSUCHCHANNEL(*chanIt)));
 		}
 		Channel *channel = this->getChannelByName(channelName);
 		if (channel == NULL) { // si le channel n'existe pas, on le créer avec le client comme admin
@@ -191,15 +192,15 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 			// ecrire un message dans le channel
 			channel->writeInChan(client, "JOIN #" + channelName);
 			// envoyer confirmation
-			client->respond("JOIN #" + channelName);
+			this->respond(client, "JOIN #" + channelName);
 		}
 		if (keysIt != keys.end())
 			keysIt++;
 	}
 
-	std::cout << "channels: " << std::endl;
+	std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
 	std::vector<Channel *>::iterator it;
 
 	for (it = this->channels.begin(); it != this->channels.end(); ++it)
-		std::cout << (*it)->getName() << std::endl;
+		std::cout << "#" + (*it)->getName() << std::endl;
 }

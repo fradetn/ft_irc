@@ -87,3 +87,13 @@ Tous les messages suivent ce format :
 <nickname> : Le nickname de l'utilisateur concerné.
 <additional arguments> : Des arguments spécifiques au message (ex. : channel, commande).
 <description> : Un message décrivant l'erreur.
+
+
+PASS salut
+NICK nick1
+USER user1 0 * :user 1
+
+
+PASS salut
+NICK nick2
+USER user2 0 * :user 2

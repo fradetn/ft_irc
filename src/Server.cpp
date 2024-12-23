@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/22 22:04:51 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/23 12:15:07 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void Server::createSocket(void) {
 }
 
 void Server::run() {
-    std::cout << "Server listening on port " << this->port << std::endl;
+    std::cout << GREEN"Server listening on port "DEFAULT << this->port << std::endl;
 	while (Server::isRunning) {
 		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
 		if (!Server::isRunning)
@@ -102,7 +102,7 @@ void Server::run() {
 			if (this->pollFds[i].revents == 0) 
 				continue;
 			if ((this->pollFds[i].revents & POLLIN) == POLLIN) {
-				std::cout << "event happening on: " << this->pollFds[i].revents << std::endl;
+				std::cout << std::endl << YELLOW"event happening on socket: "DEFAULT << this->pollFds[i].revents << std::endl;
 				this->handleEvent(i);
 				std::cout << std::endl;
 			}
@@ -127,7 +127,7 @@ void Server::handleEvent(size_t &i) {
 			pollfd pfd = {clientFd, POLLIN, 0};
 			this->pollFds.push_back(pfd);
 			this->clients[clientFd] = new Client(clientFd, host->h_name);
-			std::cout << "New client connected: " << clientFd << std::endl;
+			std::cout << GREEN"New connection accepted"DEFAULT", socketFd: " << clientFd << std::endl;
 		}
 	}
 	else {
@@ -137,44 +137,17 @@ void Server::handleEvent(size_t &i) {
 		Client *client = this->clients[this->pollFds[i].fd];
 		if (byteRead <= 0) {
 			//Déconnexion;
-			std::cout << "Déconnexion: " << this->pollFds[i].fd << std::endl;
 			this->clients.erase(searchForClient(client));
 			this->disconectClient(client);
 		}
 		else {
 			buffer[byteRead] = '\0';
-			std::cout << "Message from: " << this->pollFds[i].fd << std::endl;
-			this->handleClientMessage(client, buffer);
+			std::cout << GREEN"Message received from socket: "DEFAULT << this->pollFds[i].fd << std::endl;
+			// this->handleClientMessage(client, buffer);
+			std::cout << GREEN"message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
+			this->parseMess(buffer);
+			this->handleCommands(client);
 		}
-	}
-}
-
-void Server::handleClientMessage(Client *client, std::string const &message) {
-	std::cout << "message: '" << message << "'" << std::endl;
-	this->parseMess(message);
-	if (client->getIsAuth() == false) {
-		parserIt pass = this->searchForCmd("PASS");
-		// std::cout << "pass: '" << this->passWord << "'" << std::endl;
-		if (pass != this->parsedMessages.end() ) {
-			std::cout <<  (*pass).params[0] << std::endl;
-			std::cout <<  (*pass).trailing << std::endl;
-			if ((*pass).params[0] == this->passWord || (*pass).trailing == this->passWord) {
-				// client->setIsAuth(true);
-				std::cout << "Client authentificated: " << client->getFd() << std::endl;
-				this->parsedMessages.erase(pass);
-			}
-			else {
-				std::cout << "Wrong password from: " << client->getFd() << std::endl;
-				client->respond(ERR_PASSWDMISMATCH(client->getNickName()));
-				this->clients.erase(searchForClient(client));
-				this->disconectClient(client);
-			}
-		}
-		this->handleCommands(client);
-	}
-	else {
-		// Gérer les commandes
-		this->handleCommands(client);
 	}
 }
 
@@ -220,7 +193,7 @@ Channel		*Server::getChannelByName(std::string const &name) {
 
 void Server::disconectClient(Client *client) {
 	pollFdIt pfdIt = searchForFd(client->getFd());
-	
+	std::cout << RED"Disconnecting client on socket: "DEFAULT << client->getFd() << std::endl;
 	this->rmCliFromAllChan(client);
 	close(client->getFd());
 	delete client;

@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/18 17:29:37 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/23 11:28:57 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,14 +63,6 @@ std::vector<std::string> split(std::string toSplit, char delim) {
 	}
 	
 	return (splited);
-}
-
-e_cmdType getCmdType(const std::string& command) {
-    if (command == "NICK") return CMD_NICK;
-    if (command == "USER") return CMD_USER;
-    if (command == "QUIT") return CMD_QUIT;
-    if (command == "JOIN") return CMD_JOIN;
-    return CMD_UNKNOWN;
 }
 
 void handle_shutdown(int sig) {
