@@ -36,6 +36,82 @@ votre serveur doit répondre avec :
 ``` ruby
 :<server> 421 <nickname> <command> :Unknown command
 ```
+## Utilisation courrantes des clients/serveurs IRC
+
+## 1. Connexion au Serveur
+
+Pour qu'un client puisse se connecter au serveur, il doit envoyer trois commandes dans l'ordre suivant : PASS, NICK, et USER.
+
+### PASS
+La commande PASS permet de définir un « mot de passe de connexion ». 
+Le mot de passe facultatif peut et DOIT être défini avant toute tentative
+d'enregistrement de la connexion. Actuellement, cela nécessite que l'utilisateur envoie une
+commande PASS avant d'envoyer la combinaison NICK/USER.
+
+Numeric Replies:
+```ruby
+error:
+RR_NEEDMOREPARAMS    -> "461 nickname command :Not enough parameters"
+ERR_ALREADYREGISTRED -> "462 nickname :You may not reregister"
+```
+
+### NICK
+Normalement envoyée a la suite de la commande PASS, 
+NICK permet de définir un nouveau nickname.
+
+Numeric Replies:
+```ruby
+error:
+ERR_NONICKNAMEGIVEN	-> "431 nickname :No nickname given"
+ERR_NICKNAMEINUSE	-> "433 nickname newNickname :Nickname is already in use"
+ERR_ERRONEUSNICKNAME	-> Not used
+ERR_NICKCOLLISION	-> Not used
+ERR_UNAVAILRESOURCE	-> Not used
+ERR_RESTRICTED		-> Not used
+```
+```ruby
+replies:
+RPL_NICK	-> ":oldNick NICK newNick"
+		   (envoyé au client et à tous les clients qui ont au moins un channel en commun)
+```
+### USER
+Nomalement envoyé a la suite de la commande NICK,
+USER permet de définir un nouveau username.
+```ruby
+error:
+ERR_NEEDMOREPARAMS	-> "461 nickname command :Not enough parameters"
+ERR_ALREADYREGISTRED	-> "462 nickname :You may not reregister"
+```
+```ruby
+replies:
+RPL_WELCOME	-> "001 nickname :Welcome to the Internet Relay Network <nickname>!<username>@<hostname>" 
+		   (envoyé en réponse au client)
+```       
+## 2. Connexion aux channels
+### JOIN
+La commande JOIN permet de rejoindre un channel ou une liste de channels. </br>
+Si un client utilise JOIN sur un channel innexistant, le channel est créé et le client en devient l'opérateur. </br>
+La commande JOIN accepte un parametre spécial "JOIN 0" qui permet a l'utilisateur de quitter tous les channels qu'il a rejoint 
+```ruby
+error:
+ERR_NEEDMOREPARAMS	-> "461 nickname command :Not enough parameters"
+ERR_BANNEDFROMCHAN	-> "474 channel :Cannot join channel (+b)"
+ERR_INVITEONLYCHAN	-> "473 channel :Cannot join channel (+i)"
+ERR_BADCHANNELKEY	-> "475 channel :Cannot join channel (+k)"
+ERR_CHANNELISFULL	-> "471 channel :Cannot join channel (+l)"
+ERR_NOSUCHCHANNEL	-> "403 channel :No such channel"
+ERR_TOOMANYCHANNELS	-> Not used
+ERR_TOOMANYTARGETS	-> Not used
+ERR_UNAVAILRESOURCE	-> Not used
+ERR_BADCHANMASK		-> Not used
+```
+```ruby
+replies:
+RPL_JOIN	-> "JOIN :channel"
+RPL_TOPIC	-> "332 channel :topic"
+RPL_NOTOPIC	-> "331 channel :No topic is set"
+
+```
 
 ## Quelques fonctions utiles
 
