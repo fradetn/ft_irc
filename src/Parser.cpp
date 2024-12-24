@@ -42,11 +42,11 @@ void Parser::parseMessage(std::string message) {
 		this->params = split(message, ' ');
 	}
 
-	// std::cout << "prefix: '" << this->prefix << "'" << std::endl;
-	// std::cout << "command: '" << this->command << "'" << std::endl;
-	// std::cout << "params: " << 
-	// 	for_each(this->params.begin(), this->params.end(), affStr)
-	// 	<< std::endl;
-	// 	std::cout << "trailing: '" << this->trailing << "'" << std::endl;
-	// std::cout << std::endl;
+	std::cout << "prefix: '" << this->prefix << "'" << std::endl;
+	std::cout << "command: '" << this->command << "'" << std::endl;
+	std::cout << "params: " << 
+		for_each(this->params.begin(), this->params.end(), affStr)
+		<< std::endl;
+		std::cout << "trailing: '" << this->trailing << "'" << std::endl;
+	std::cout << std::endl;
 }

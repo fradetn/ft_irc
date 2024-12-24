@@ -53,15 +53,17 @@ class Channel;
 # define RPL_CREATED(nickname, date)				"003 " + nickname + " :This server was created " + date
 # define RPL_MYINFO(nickname, servName, version)	"004 " + nickname + " " + servername + " " + version + " <available user modes> <available channel modes>"
 
-# define RPL_TOPIC(nickname, channel, topic)		"332 " + nickname + " " + channel + " :" + topic
+# define RPL_NOTOPIC(channel)						"331 " + channel + " :No topic is set"
+# define RPL_TOPIC(nickname, channel, topic)		"332 " + nickname + " Topic for " + channel + " is: " + topic
 # define RPL_NAMREPLY(nickname, channel)			"353 " + nickname + " " + channel + " :"
-# define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of NAMES list"
+# define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of /NAMES list"
 
 # define RPL_QUIT(nickname, reason)					":" + nickname + " QUIT :" + reason
 # define RPL_PART(channel, reason)					"PART " + channel + " " + reason
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 # define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
+# define RPL_PRIVMSG(nickname, target, message)		":" + nickname + " PRIVMSG " + target + " :" + message
 
 
 # define DEFAULT	"\033[0m"

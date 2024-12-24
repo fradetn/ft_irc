@@ -13,7 +13,7 @@ void Server::handleCommands(Client *client) {
 		int i;
 		for (i = 0; i < NB_CMD && commandsStr[i] != (*it).command; i++){}
 		// std::cout << "i = " << i << std::endl;
-		if ((i == 1 ||i == 2) && !client->getIsLog()) {
+		if ((i == 1 || i == 2) && !client->getIsLog()) {
 			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
 			this->respond(client, ERR_NOTREGISTERED((*it).command));
 		}
@@ -193,6 +193,12 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 			channel = this->getChannelByName(channelName);
 			// ecrire un message dans le channel
 			channel->writeInChan(client, RPL_JOIN(channelName));
+			if (!channel->getTopic().empty())
+				this->respond(client, RPL_TOPIC( client->getNickName(), channelName, channel->getTopic()));
+			else
+				this->respond(client, RPL_NOTOPIC(channelName));
+			this->respond(client, channel->getListMessage(client));
+			this->respond(client, RPL_ENDOFNAMES(client->getNickName(), channelName));
 		}
 		if (keysIt != keys.end())
 			keysIt++;

@@ -13,6 +13,7 @@ Channel::Channel() {
 
 Channel::Channel(Client *first, std::string _name) {
 	this->name = _name;
+	this->topic = "default";
 	this->clientList[first] = true;
 	this->key = "";
 	this->limit = 0;
@@ -20,6 +21,7 @@ Channel::Channel(Client *first, std::string _name) {
 
 Channel::Channel(Client *first, std::string _name, std::string _key) {
 	this->name = _name;
+	this->topic = "default";
 	this->clientList[first] = true;
 	this->key = _key;
 	this->limit = 0;
@@ -35,6 +37,11 @@ std::string Channel::getName() const {
 	return (this->name);
 }
 
+std::string Channel::getTopic() const {
+	return (this->topic);
+}
+
+
 std::vector<Client *> Channel::getClients() const{
 	std::vector<Client *> clients;
 	std::map<Client *, bool>::const_iterator it;
@@ -42,6 +49,21 @@ std::vector<Client *> Channel::getClients() const{
 		clients.push_back((*it).first);
 	}
 	return (clients);
+}
+
+std::string Channel::getListMessage(Client *client) {
+	std::string list = "353 " + client->getNickName();
+	if (true) // verifier l'état du channel
+		list += " = " + this->getName() + " :";
+	
+	std::map<Client *, bool>::iterator it;
+	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
+		if (it->second == true)
+			list += "@";
+		list += it->first->getNickName() + " ";
+	}
+	list.erase(list.size() - 1);
+	return (list);
 }
 
 bool Channel::isClientInChan(Client *client) {

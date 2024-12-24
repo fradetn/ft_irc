@@ -104,8 +104,7 @@ std::set<Client *> Server::getChanCommonUsers(Client *client) {
 void	Server::sendMessToAllCommonUsers(Client *client, std::string message) {
 	std::set<Client *> commonUsers = this->getChanCommonUsers(client);
 	for (std::set<Client *>::iterator it = commonUsers.begin(); it != commonUsers.end(); ++it) {
-		if ((*it) != client)
-			(*it)->write(message);
+		(*it)->write(message);
 	}
 	commonUsers.clear();
 }

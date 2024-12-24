@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/22 18:41:37 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/24 17:41:00 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class Channel
 {
 private:
 	std::string name;
+	std::string topic;
 
 	//		 client  , isAdmin
 	std::map<Client *, bool> clientList;
@@ -36,7 +37,10 @@ public:
 	~Channel();
 	
 	std::string getName() const;
+	std::string getTopic() const;
 	std::vector<Client *> getClients() const;
+
+	std::string getListMessage(Client *client);
 
 	void writeInChan(Client *client, std::string message);
 	

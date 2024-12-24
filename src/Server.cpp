@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 17:28:54 by nfradet          ###   ########.fr       */
+/*   Updated: 2024/12/24 17:59:18 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void Server::handleEvent(size_t &i) {
 void Server::shutDown() {
 	std::map<int, Client *>::iterator it;
 	for (it = this->clients.begin(); it != this->clients.end(); ++it) {
-		this->respond(it->second, ERR_SHUTDOWN);
+		it->second->write(ERR_SHUTDOWN);
 		this->disconectClient(it->second);
 	}
 	close(this->serverFd);
@@ -186,5 +186,5 @@ void Server::rmCliFromAllChan(Client *client) {
 }
 
 void Server::respond(Client *client, std::string message) {
-	client->write(message);
+	client->write(":" + this->getPrefix() + " " + message);
 }
