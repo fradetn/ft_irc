@@ -47,6 +47,6 @@ void Parser::parseMessage(std::string message) {
 	std::cout << "params: " << 
 		for_each(this->params.begin(), this->params.end(), affStr)
 		<< std::endl;
-		std::cout << "trailing: '" << this->trailing << "'" << std::endl;
+	std::cout << "trailing: '" << this->trailing << "'" << std::endl;
 	std::cout << std::endl;
 }

@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "PRIVMSG"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdPriv};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -239,5 +239,53 @@ void Server::cmdPart(Client *client, Parser cmd) {
 			}
 
 		}
+	}
+}
+
+void Server::cmdPriv(Client *client, Parser cmd) {
+	if (cmd.params[0].empty())
+	{
+		std::cout << RED"ERR_NORECIPIENT"DEFAULT << std::endl;
+		this->respond(client, ERR_NORECIPIENT(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params.size() != 1) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.trailing.size() == 0){
+		std::cout << RED"ERR_NOTEXTTOSEND"DEFAULT << std::endl;
+		this->respond(client, ERR_NOTEXTTOSEND(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params[0].find(',') != std::string::npos){
+		std::cout << RED"ERR_TOOMANYTARGETS"DEFAULT << std::endl;
+		this->respond(client, ERR_TOOMANYTARGETS(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params[0][0] == '#'){
+		Channel *channel = this->getChannelByName(cmd.params[0]);
+		if (channel == NULL){
+			std::cout << RED"Channel " << cmd.params[0] << " does not exists." DEFAULT << std::endl;
+		}
+		else{
+			channel->writeInChan(client, cmd.trailing);
+		}
+		return;
+	}
+
+	Client *clienttest = this->getClientByNick(cmd.params[0]);
+	if (clienttest == NULL){
+		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
+		this->respond(client, ERR_NOSUCHNICK(client->getNickName(), cmd.command));
+		return;
+	}
+	else{
+		clienttest->write(client->getPrefix() + " :" + cmd.trailing);
 	}
 }
