@@ -286,6 +286,6 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 		return;
 	}
 	else{
-		clienttest->write(client->getPrefix() + " :" + cmd.trailing);
+		clienttest->write(":" + client->getPrefix() + " :" + cmd.trailing);
 	}
 }
