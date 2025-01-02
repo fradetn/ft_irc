@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -35,8 +35,6 @@ void Server::handleCommands(Client *client) {
 }
 
 void Server::cmdPass(Client *client, Parser cmd) {
-	// std::cout <<  cmd.params[0] << std::endl;
-	// std::cout <<  cmd.trailing << std::endl;
 	if (client->getIsLog() == true) {
 		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
 		return (this->respond(client, ERR_ALREADYREGISTRED(client->getNickName())));
@@ -112,11 +110,6 @@ void Server::cmdUser(Client *client, Parser cmd) {
 		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
-	else if (this->getClientByUser(cmd.params[0]) != NULL) { // si ce UserName est deja pris
-		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
-		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
-		return;
-	}
 	client->setUserName(cmd.params[0]);
 	std::cout << GREEN"New username set: "DEFAULT << client->getUserName() << std::endl;
 	if (!client->getNickName().empty() && !client->getIsAuth()) {
@@ -146,7 +139,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
  * @param cmd parsed command line
  */
 void Server::cmdJoin(Client *client, Parser cmd) {
-	bool isJoined;
+	bool isJoined = false;
 
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
 		std::cout << RED"Removing client from all Channels"DEFAULT << std::endl;
@@ -156,6 +149,11 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 				(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
 		}
 		this->rmCliFromAllChan(client);
+
+		std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
+		std::vector<Channel *>::iterator ite;
+		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite)
+			std::cout << (*ite)->getName() << std::endl;
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
@@ -206,11 +204,19 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 
 	std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
 	std::vector<Channel *>::iterator it;
-
 	for (it = this->channels.begin(); it != this->channels.end(); ++it)
 		std::cout << (*it)->getName() << std::endl;
 }
 
+/**
+ * @brief 
+ * Command: PART
+ * 
+ * Parameters: ( #<channel> *( "," #<channel> ) [ :<Part Message> ] )
+ * 
+ * @param client pointer to client
+ * @param cmd parsed command line
+ */
 void Server::cmdPart(Client *client, Parser cmd) {
 	if (cmd.params.empty() || cmd.params.size() > 1) {
 		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
@@ -238,6 +244,47 @@ void Server::cmdPart(Client *client, Parser cmd) {
 				delete (channel);
 			}
 
+		}
+	}
+}
+
+/**
+ * @brief 
+ * Command: TOPIC
+ * 
+ * Parameters: ( #<channel> [ <topic> ] )
+ * 
+ * @param client pointer to client
+ * @param cmd parsed command line2
+ */
+void Server::cmdTopic(Client *client, Parser cmd) {
+	if (cmd.params.size() < 1) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		return this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+	}
+	Channel *channel = this->getChannelByName(cmd.params[0]);
+	if (channel != NULL) {
+		if (channel->isClientInChan(client)) {
+			if (cmd.trailing.empty()) {
+				if (!channel->getTopic().empty())
+					return this->respond(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
+				else
+					return this->respond(client, RPL_NOTOPIC(channel->getName()));
+			}
+			else {
+				if (channel->isClientAdmin(client)) {
+					channel->setTopic(cmd.trailing);
+					channel->writeInChan(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
+				}
+				else {
+					std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
+					return this->respond(client, ERR_CHANOPRIVSNEEDED(client->getNickName(), channel->getName()));
+				}
+			}
+		}
+		else {
+			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+			return this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), channel->getName()));
 		}
 	}
 }

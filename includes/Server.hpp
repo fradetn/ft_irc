@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 17:26:31 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/02 18:25:14 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,25 +51,25 @@ private:
 	void		rmCliFromAllChan(Client *client);
 	void 		respond(Client *client, std::string message);
 	
-	
 	//=====================//
 	//	   Server Utils	   //
 	//=====================//
 	
-	std::set<Client *> getChanCommonUsers(Client *client);
-	void		sendMessToAllCommonUsers(Client *client, std::string message);
+	std::string			getPrefix();
+	void				parseMess(std::string message);
+	std::set<Client *>	getChanCommonUsers(Client *client);
+	void				sendMessToAllCommonUsers(Client *client, std::string message);
 
+	/* ------------ Getters that return pointers ----------- */
 	Client		*getClientByNick(std::string const &nickname);
 	Client		*getClientByUser(std::string const &username);
 	Channel		*getChannelByName(std::string const &name);
-	std::string getPrefix();
 	
+	/* ----------- Getters that return iterators ----------- */
 	clientsIt 	searchForClient(Client *client);
 	channelIt 	searchForChannel(Channel *channel);
 	parserIt	searchForCmd(std::string cmd);
 	pollFdIt 	searchForFd(int fd);
-	
-	void		parseMess(std::string message);
 
 public:
 
@@ -91,6 +91,7 @@ public:
 	void cmdQuit(Client *client, Parser cmd);
 	void cmdJoin(Client *client, Parser cmd);
 	void cmdPart(Client *client, Parser cmd);
+	void cmdTopic(Client *client, Parser cmd);
 
 };
 

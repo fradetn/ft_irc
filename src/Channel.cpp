@@ -93,6 +93,19 @@ bool Channel::isOneAdminInChan() {
 	return (false);
 }
 
+bool Channel::isClientAdmin(Client *client) {
+	std::map<Client *, bool>::iterator it;
+
+	for (it = this->clientList.begin(); it != this->clientList.end(); ++it)
+		if (client == (*it).first && (*it).second == true)
+			return (true);
+	return (false);
+}
+
+void	Channel::setTopic(std::string newTopic) {
+	this->topic = newTopic;
+}
+
 bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
 		newClient->respond(ERR_BANNEDFROMCHAN(this->name));
