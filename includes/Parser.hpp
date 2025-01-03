@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/08 15:33:28 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/12 23:02:51 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/02 20:28:12 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ public:
 	std::string command;
     std::vector<std::string> params;
 	std::string trailing;
+
+	bool hasTrailing;
 
 	Parser(/* args */);
 	~Parser();

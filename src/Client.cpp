@@ -11,6 +11,7 @@ Client::Client() {
 	this->userName = "";
 	this->isAuth = false;
 	this->isLog = false;
+	this->buffer = "";
 }
 
 Client::Client(int _fd, std::string const &_hostname) {
@@ -20,6 +21,7 @@ Client::Client(int _fd, std::string const &_hostname) {
 	this->hostName = _hostname;
 	this->isAuth = false;
 	this->isLog = false;
+	this->buffer = "";
 }
 
 Client::~Client() {
@@ -48,6 +50,11 @@ bool Client::getIsLog() const {
 std::string Client::getHostName() const {
 	return (this->hostName);
 }
+
+std::string Client::getBuffer() const {
+	return (this->buffer);
+}
+
 
 void Client::setFd(int _fd) {
 	this->fd = _fd;
@@ -84,4 +91,18 @@ void Client::write(std::string const &message) const {
 
 void Client::respond(std::string const &message) const {
 	this->write(":" + this->getPrefix() + " " + message);
+}
+
+void Client::appendToBuffer(const char *receiveBuffer, size_t length) {
+	this->buffer.append(receiveBuffer, length);
+}
+
+std::string Client::extractNextMessage() {
+	size_t pos = this->buffer.find("\r\n");
+	if (pos != std::string::npos) {
+		std::string message = this->buffer.substr(0, pos);
+		this->buffer.erase(0, pos + 2);
+		return message;
+	}
+	return "";
 }

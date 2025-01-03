@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/24 17:59:18 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/02 20:19:29 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,20 +132,31 @@ void Server::handleEvent(size_t &i) {
 	}
 	else {
 		// Message recu d'un client
+		Client *client = this->clients[this->pollFds[i].fd];
 		char buffer[BUFFER_SIZE];
 		int byteRead = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
-		Client *client = this->clients[this->pollFds[i].fd];
-		if (byteRead <= 0) {
+		std::cout << GREEN"byteRead: '"DEFAULT << byteRead << GREEN"'"DEFAULT << std::endl;
+		
+		if (byteRead == -1)
+			throw std::runtime_error("Error: recv failed");
+		if (byteRead == 0) {
 			//Déconnexion;
 			this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), "Leaving"));
 			this->clients.erase(searchForClient(client));
 			this->disconectClient(client);
+			return;
 		}
-		else {
-			buffer[byteRead] = '\0';
-			std::cout << GREEN"Message received from socket: "DEFAULT << this->pollFds[i].fd << std::endl;
-			std::cout << GREEN"Message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
-			this->parseMess(buffer);
+		buffer[byteRead] = '\0';
+
+		client->appendToBuffer(buffer, byteRead);
+
+		std::cout << GREEN"Message received from socket: "DEFAULT << this->pollFds[i].fd << std::endl;
+		std::cout << GREEN"Message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
+		std::cout << GREEN"Buffer: '"DEFAULT << client->getBuffer() << GREEN"'"DEFAULT << std::endl;
+		std::string message;
+		while ((message = client->extractNextMessage()) != "") {
+			std::cout << GREEN"Message complet: '"DEFAULT << message << GREEN"'"DEFAULT << std::endl;
+			this->parseMess(message);
 			this->handleCommands(client);
 		}
 	}
