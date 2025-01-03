@@ -112,11 +112,6 @@ void Server::cmdUser(Client *client, Parser cmd) {
 		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
 		return;
 	}
-	else if (this->getClientByUser(cmd.params[0]) != NULL) { // si ce UserName est deja pris
-		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
-		this->respond(client, ERR_ALREADYREGISTRED(client->getNickName()));
-		return;
-	}
 	client->setUserName(cmd.params[0]);
 	std::cout << GREEN"New username set: "DEFAULT << client->getUserName() << std::endl;
 	if (!client->getNickName().empty() && !client->getIsAuth()) {
@@ -153,7 +148,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		std::vector<Channel *>::iterator it;
 		for (it = this->channels.begin(); it != this->channels.end(); ++it) {
 			if ((*it)->isClientInChan(client))
-				(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"));
+				(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"), true);
 		}
 		this->rmCliFromAllChan(client);
 		return;
@@ -192,7 +187,7 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 		if (isJoined) {
 			channel = this->getChannelByName(channelName);
 			// ecrire un message dans le channel
-			channel->writeInChan(client, RPL_JOIN(channelName));
+			channel->writeInChan(client, RPL_JOIN(channelName), true);
 			if (!channel->getTopic().empty())
 				this->respond(client, RPL_TOPIC( client->getNickName(), channelName, channel->getTopic()));
 			else
@@ -232,7 +227,7 @@ void Server::cmdPart(Client *client, Parser cmd) {
 			this->respond(client, ERR_NOSUCHCHANNEL((*chanIt)));
 		}
 		else {
-			channel->writeInChan(client, RPL_PART(channel->getName(), cmd.trailing));
+			channel->writeInChan(client, RPL_PART(channel->getName(), cmd.trailing), true);
 			if (channel->removeClient(client) == false) {
 				this->channels.erase(this->searchForChannel(channel));
 				delete (channel);
@@ -274,18 +269,18 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 			std::cout << RED"Channel " << cmd.params[0] << " does not exists." DEFAULT << std::endl;
 		}
 		else{
-			channel->writeInChan(client, cmd.trailing);
+			channel->writeInChan(client, RPL_PRIVMSG(cmd.params[0], cmd.trailing), false);
 		}
 		return;
 	}
 
 	Client *clienttest = this->getClientByNick(cmd.params[0]);
-	if (clienttest == NULL){
+	if (clienttest == NULL || !clienttest->getIsAuth()){
 		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
 		this->respond(client, ERR_NOSUCHNICK(client->getNickName(), cmd.command));
 		return;
 	}
 	else{
-		clienttest->write(":" + client->getPrefix() + " :" + cmd.trailing);
+		clienttest->write(":" + client->getPrefix() + " " + RPL_PRIVMSG(cmd.params[0], cmd.trailing));
 	}
 }

@@ -128,11 +128,11 @@ bool Channel::removeClient(Client *client) {
 	return (true);
 }
 
-void Channel::writeInChan(Client *client, std::string message) {
+void Channel::writeInChan(Client *client, std::string message, bool sendToMe) {
 	// avertir tous les clients
 	std::map<Client *, bool>::iterator it;
 	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
-		// if (client != it->first)
-		it->first->write(":" + client->getPrefix() + " " + message);
+		if (client != it->first || sendToMe)
+			it->first->write(":" + client->getPrefix() + " " + message);
 	}
 }

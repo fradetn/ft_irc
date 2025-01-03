@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/24 17:41:00 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/03 19:01:01 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ public:
 
 	std::string getListMessage(Client *client);
 
-	void writeInChan(Client *client, std::string message);
+	void writeInChan(Client *client, std::string message, bool sendToMe);
 	
 	bool removeClient(Client *client);
 	bool addNewClient(Client *newClient, std::string key);

@@ -67,7 +67,7 @@ class Channel;
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 # define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
-# define RPL_PRIVMSG(nickname, target, message)		":" + nickname + " PRIVMSG " + target + " :" + message
+# define RPL_PRIVMSG(target, message)		"PRIVMSG " + target + " :" + message
 
 
 # define DEFAULT	"\033[0m"
