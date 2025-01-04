@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/02 20:19:29 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/04 02:44:52 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,6 +132,7 @@ void Server::handleEvent(size_t &i) {
 	}
 	else {
 		// Message recu d'un client
+		
 		Client *client = this->clients[this->pollFds[i].fd];
 		char buffer[BUFFER_SIZE];
 		int byteRead = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
@@ -154,11 +155,14 @@ void Server::handleEvent(size_t &i) {
 		std::cout << GREEN"Message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
 		std::cout << GREEN"Buffer: '"DEFAULT << client->getBuffer() << GREEN"'"DEFAULT << std::endl;
 		std::string message;
-		while ((message = client->extractNextMessage()) != "") {
+		while (!client->getToBeDeleted() && (message = client->extractNextMessage()) != "") {
 			std::cout << GREEN"Message complet: '"DEFAULT << message << GREEN"'"DEFAULT << std::endl;
 			this->parseMess(message);
 			this->handleCommands(client);
+			std::cout << client << std::endl;
 		}
+		if (client->getToBeDeleted())
+			this->disconectClient(client);
 	}
 }
 

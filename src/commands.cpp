@@ -47,7 +47,7 @@ void Server::cmdPass(Client *client, Parser cmd) {
 		std::cout << "Wrong password from: " << client->getFd() << std::endl;
 		this->respond(client, ERR_PASSWDMISMATCH(client->getNickName()));
 		this->clients.erase(searchForClient(client));
-		this->disconectClient(client);
+		client->setToBeDeleted(true);
 	}
 }
 
@@ -124,7 +124,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 
 	this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), cmd.trailing));
 	this->clients.erase(searchForClient(client));
-	this->disconectClient(client);
+	client->setToBeDeleted(true);
 }
 
 /**
@@ -288,16 +288,6 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 		}
 	}
 }
-
-/**
- * @brief 
- * Command: PRIVMSG
- * 
- * Parameters: ( <msgtarget> <text to be sent> )
- * 
- * @param client pointer to client
- * @param cmd parsed command line2
- */
 void Server::cmdPriv(Client *client, Parser cmd) {
 	if (cmd.params[0].empty())
 	{
@@ -312,7 +302,7 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 		return;
 	}
 
-	if (cmd.hasTrailing == false) {
+	if (cmd.trailing.size() == 0){
 		std::cout << RED"ERR_NOTEXTTOSEND"DEFAULT << std::endl;
 		this->respond(client, ERR_NOTEXTTOSEND(client->getNickName(), cmd.command));
 		return;
