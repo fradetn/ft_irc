@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -47,7 +47,7 @@ void Server::cmdPass(Client *client, Parser cmd) {
 		std::cout << "Wrong password from: " << client->getFd() << std::endl;
 		this->respond(client, ERR_PASSWDMISMATCH(client->getNickName()));
 		this->clients.erase(searchForClient(client));
-		this->disconectClient(client);
+		client->setToBeDeleted(true);
 	}
 }
 
@@ -124,7 +124,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 
 	this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), cmd.trailing));
 	this->clients.erase(searchForClient(client));
-	this->disconectClient(client);
+	client->setToBeDeleted(true);
 }
 
 /**
@@ -286,5 +286,52 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
 			return this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), channel->getName()));
 		}
+	}
+}
+void Server::cmdPriv(Client *client, Parser cmd) {
+	if (cmd.params[0].empty())
+	{
+		std::cout << RED"ERR_NORECIPIENT"DEFAULT << std::endl;
+		this->respond(client, ERR_NORECIPIENT(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params.size() != 1) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.trailing.size() == 0){
+		std::cout << RED"ERR_NOTEXTTOSEND"DEFAULT << std::endl;
+		this->respond(client, ERR_NOTEXTTOSEND(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params[0].find(',') != std::string::npos){
+		std::cout << RED"ERR_TOOMANYTARGETS"DEFAULT << std::endl;
+		this->respond(client, ERR_TOOMANYTARGETS(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params[0][0] == '#'){
+		Channel *channel = this->getChannelByName(cmd.params[0]);
+		if (channel == NULL){
+			std::cout << RED"Channel " << cmd.params[0] << " does not exists." DEFAULT << std::endl;
+		}
+		else{
+			channel->writeInChan(client, cmd.trailing);
+		}
+		return;
+	}
+
+	Client *clienttest = this->getClientByNick(cmd.params[0]);
+	if (clienttest == NULL){
+		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
+		this->respond(client, ERR_NOSUCHNICK(client->getNickName(), cmd.command));
+		return;
+	}
+	else{
+		clienttest->write(":" + client->getPrefix() + " :" + cmd.trailing);
 	}
 }

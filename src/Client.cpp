@@ -11,6 +11,8 @@ Client::Client() {
 	this->userName = "";
 	this->isAuth = false;
 	this->isLog = false;
+	this->toBeDeleted = false;
+	this->buffer = "";
 }
 
 Client::Client(int _fd, std::string const &_hostname) {
@@ -20,6 +22,8 @@ Client::Client(int _fd, std::string const &_hostname) {
 	this->hostName = _hostname;
 	this->isAuth = false;
 	this->isLog = false;
+	this->toBeDeleted = false;
+	this->buffer = "";
 }
 
 Client::~Client() {
@@ -44,9 +48,14 @@ bool Client::getIsAuth() const {
 bool Client::getIsLog() const {
 	return (this->isLog);
 }
-
 std::string Client::getHostName() const {
 	return (this->hostName);
+}
+std::string Client::getBuffer() const {
+	return (this->buffer);
+}
+bool Client::getToBeDeleted() const {
+	return (this->toBeDeleted);
 }
 
 void Client::setFd(int _fd) {
@@ -64,6 +73,11 @@ void Client::setIsAuth(bool _isAuth) {
 void Client::setIsLog(bool _isLog) {
 	this->isLog = _isLog;
 }
+void Client::setToBeDeleted(bool _toBeDeleted) {
+	this->toBeDeleted = _toBeDeleted;
+}
+
+
 
 /* -------------------------------------------------------------------------- */
 /*                                  Functions                                 */
@@ -84,4 +98,18 @@ void Client::write(std::string const &message) const {
 
 void Client::respond(std::string const &message) const {
 	this->write(":" + this->getPrefix() + " " + message);
+}
+
+void Client::appendToBuffer(const char *receiveBuffer, size_t length) {
+	this->buffer.append(receiveBuffer, length);
+}
+
+std::string Client::extractNextMessage() {
+	size_t pos = this->buffer.find("\n");
+	if (pos != std::string::npos) {
+		std::string message = this->buffer.substr(0, pos);
+		this->buffer.erase(0, pos + 1);
+		return message;
+	}
+	return "";
 }

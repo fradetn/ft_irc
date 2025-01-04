@@ -35,6 +35,10 @@ class Channel;
 // Erreurs liées aux commandes
 # define ERR_UNKNOWNCOMMAND(nickname, command)		"421 " + nickname + " " + command + " :Unknown command"
 # define ERR_NEEDMOREPARAMS(nickname, command)		"461 " + nickname + " " + command + " :Not enough parameters"
+# define ERR_NORECIPIENT(nickname, command)			"411 " + nickname + " " + command + " :No recipient given"
+# define ERR_NOTEXTTOSEND(nickname, command)		"412 " + nickname + " " + command + " :No text to send"
+# define ERR_TOOMANYTARGETS(nickname, command)		"407 " + nickname + " " + command + " :Duplicate recipients. No message delivered"
+# define ERR_NOSUCHNICK(nickname, command)			"401 " + nickname + " " + command + " :No such nick"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
@@ -85,7 +89,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 7
+# define NB_CMD 8
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);
