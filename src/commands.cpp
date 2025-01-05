@@ -100,7 +100,7 @@ void Server::cmdNick(Client *client, Parser cmd) {
  */
 void Server::cmdUser(Client *client, Parser cmd) {
 	// std::cout << "first param: " << cmd.params[0] << std::endl;
-	if (cmd.params.size() < 3 || cmd.hasTrailing == false) {
+	if (cmd.params.size() < 3 || !cmd.hasTrailing) {
 		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
@@ -265,7 +265,7 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 	Channel *channel = this->getChannelByName(cmd.params[0]);
 	if (channel != NULL) {
 		if (channel->isClientInChan(client)) {
-			if (cmd.hasTrailing == false) {
+			if (!cmd.hasTrailing) {
 				if (!channel->getTopic().empty())
 					return this->respond(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
 				else
@@ -288,6 +288,15 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 		}
 	}
 }
+
+/**
+ * @brief Command: PRIVMSG
+ *
+ * Parameters: <target> :<message>
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
 void Server::cmdPriv(Client *client, Parser cmd) {
 	if (cmd.params[0].empty())
 	{
@@ -302,7 +311,7 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 		return;
 	}
 
-	if (cmd.trailing.size() == 0){
+	if (!cmd.hasTrailing){
 		std::cout << RED"ERR_NOTEXTTOSEND"DEFAULT << std::endl;
 		this->respond(client, ERR_NOTEXTTOSEND(client->getNickName(), cmd.command));
 		return;
