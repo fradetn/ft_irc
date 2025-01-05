@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/04 02:45:02 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/05 15:29:09 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ private:
 	bool		isAuth;
 	bool		isLog;
 	bool		toBeDeleted;
-
-	std::string buffer;
 
 	std::string buffer;
 
