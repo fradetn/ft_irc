@@ -6,7 +6,7 @@
 /*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/27 16:16:22 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/05 21:26:18 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ public:
 	void cmdJoin(Client *client, Parser cmd);
 	void cmdPart(Client *client, Parser cmd);
 	void cmdPriv(Client *client, Parser cmd);
+	void cmdMode(Client *client, Parser cmd);
 
 };
 

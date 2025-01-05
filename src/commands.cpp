@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "PRIVMSG"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdPriv};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "PRIVMSG", "MODE"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdPriv, &Server::cmdMode};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -266,7 +266,9 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 	if (cmd.params[0][0] == '#'){
 		Channel *channel = this->getChannelByName(cmd.params[0]);
 		if (channel == NULL){
-			std::cout << RED"Channel " << cmd.params[0] << " does not exists." DEFAULT << std::endl;
+			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+			this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[0]));
+			return;
 		}
 		else{
 			channel->writeInChan(client, RPL_PRIVMSG(cmd.params[0], cmd.trailing), false);
@@ -283,4 +285,30 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 	else{
 		clienttest->write(":" + client->getPrefix() + " " + RPL_PRIVMSG(cmd.params[0], cmd.trailing));
 	}
+}
+
+void	Server::cmdMode(Client *client, Parser cmd)
+{
+	if (cmd.params.size() < 2 || cmd.params[0].empty()) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+
+	if (cmd.params[0][0] == '#')
+	{
+		Channel	*channeltest = this->getChannelByName(cmd.params[0]);
+		if (channeltest == NULL) {
+			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+			this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[0]));
+			return;
+		}
+		if (!channeltest->isClientInChan(client)) {
+			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+			this->respond(client, ERR_NOTONCHANNEL(cmd.params[0]));
+			return;
+		}
+		//if (channeltest->)
+	}
+
 }

@@ -32,7 +32,7 @@ void Parser::parseMessage(std::string message) {
 	}
 
 	pos = message.find(":");
-	if (pos != std::string::npos) {
+	if (pos != std::string::npos && this->command != "MODE") {
 		this->trailing = message.substr(pos + 1);
 		message = message.substr(0, pos);
 		this->params = split(message, ' ');

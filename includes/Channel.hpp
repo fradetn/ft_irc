@@ -6,7 +6,7 @@
 /*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/03 19:01:01 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/05 18:51:59 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,9 @@ private:
 	std::string topic;
 
 	//		 client  , isAdmin
-	std::map<Client *, bool> clientList;
-	std::vector<Client *> banned;
+	std::map<Client *, bool>	clientList;
+	std::vector<Client *>		banned;
+	std::set<char>				mods;
 
 	std::string key;
 	size_t		limit;
