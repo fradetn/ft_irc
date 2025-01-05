@@ -1,7 +1,7 @@
 #include "includes.hpp"
 #include "Parser.hpp"
 
-Parser::Parser(/* args */) : prefix(""), command("") {
+Parser::Parser(/* args */) : prefix(""), command(""), hasTrailing(false) {
 }
 
 Parser::~Parser() {
@@ -33,10 +33,10 @@ void Parser::parseMessage(std::string message) {
 
 	pos = message.find(":");
 	if (pos != std::string::npos && this->command != "MODE") {
+		this->hasTrailing = true;
 		this->trailing = message.substr(pos + 1);
 		message = message.substr(0, pos);
 		this->params = split(message, ' ');
-        // this->params.push_back(trailing);
 	}
 	else{
 		this->params = split(message, ' ');

@@ -6,7 +6,7 @@
 /*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/05 18:51:59 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/05 22:01:54 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ public:
 	std::string getTopic() const;
 	std::vector<Client *> getClients() const;
 
+	void	setTopic(std::string newTopic);
+
 	std::string getListMessage(Client *client);
 
 	void writeInChan(Client *client, std::string message, bool sendToMe);
@@ -48,6 +50,7 @@ public:
 	bool removeClient(Client *client);
 	bool addNewClient(Client *newClient, std::string key);
 	bool isClientInChan(Client *client);
+	bool isClientAdmin(Client *client);
 	bool isClientBanned(Client *client);
 	bool isOneAdminInChan();
 };

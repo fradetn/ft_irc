@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "PRIVMSG", "MODE"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdPriv, &Server::cmdMode};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -35,8 +35,6 @@ void Server::handleCommands(Client *client) {
 }
 
 void Server::cmdPass(Client *client, Parser cmd) {
-	// std::cout <<  cmd.params[0] << std::endl;
-	// std::cout <<  cmd.trailing << std::endl;
 	if (client->getIsLog() == true) {
 		std::cout << RED"ERR_ALREADYREGISTRED"DEFAULT << std::endl;
 		return (this->respond(client, ERR_ALREADYREGISTRED(client->getNickName())));
@@ -49,7 +47,7 @@ void Server::cmdPass(Client *client, Parser cmd) {
 		std::cout << "Wrong password from: " << client->getFd() << std::endl;
 		this->respond(client, ERR_PASSWDMISMATCH(client->getNickName()));
 		this->clients.erase(searchForClient(client));
-		this->disconectClient(client);
+		client->setToBeDeleted(true);
 	}
 }
 
@@ -102,7 +100,7 @@ void Server::cmdNick(Client *client, Parser cmd) {
  */
 void Server::cmdUser(Client *client, Parser cmd) {
 	// std::cout << "first param: " << cmd.params[0] << std::endl;
-	if (cmd.params.size() < 3 || cmd.trailing.empty()) {
+	if (cmd.params.size() < 3 || !cmd.hasTrailing) {
 		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
 		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
 		return;
@@ -126,7 +124,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
 
 	this->sendMessToAllCommonUsers(client, RPL_QUIT(client->getPrefix(), cmd.trailing));
 	this->clients.erase(searchForClient(client));
-	this->disconectClient(client);
+	client->setToBeDeleted(true);
 }
 
 /**
@@ -141,7 +139,7 @@ void Server::cmdQuit(Client *client, Parser cmd) {
  * @param cmd parsed command line
  */
 void Server::cmdJoin(Client *client, Parser cmd) {
-	bool isJoined;
+	bool isJoined = false;
 
 	if (cmd.params.size() == 1 && cmd.params[0] == "0") {
 		std::cout << RED"Removing client from all Channels"DEFAULT << std::endl;
@@ -151,6 +149,11 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 				(*it)->writeInChan(client, RPL_PART((*it)->getName(), "Leaving"), true);
 		}
 		this->rmCliFromAllChan(client);
+
+		std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
+		std::vector<Channel *>::iterator ite;
+		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite)
+			std::cout << (*ite)->getName() << std::endl;
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
@@ -201,11 +204,19 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 
 	std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
 	std::vector<Channel *>::iterator it;
-
 	for (it = this->channels.begin(); it != this->channels.end(); ++it)
 		std::cout << (*it)->getName() << std::endl;
 }
 
+/**
+ * @brief 
+ * Command: PART
+ * 
+ * Parameters: ( #<channel> *( "," #<channel> ) [ :<Part Message> ] )
+ * 
+ * @param client pointer to client
+ * @param cmd parsed command line
+ */
 void Server::cmdPart(Client *client, Parser cmd) {
 	if (cmd.params.empty() || cmd.params.size() > 1) {
 		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
@@ -237,6 +248,55 @@ void Server::cmdPart(Client *client, Parser cmd) {
 	}
 }
 
+/**
+ * @brief 
+ * Command: TOPIC
+ * 
+ * Parameters: ( #<channel> [ <topic> ] )
+ * 
+ * @param client pointer to client
+ * @param cmd parsed command line2
+ */
+void Server::cmdTopic(Client *client, Parser cmd) {
+	if (cmd.params.size() < 1) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		return this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+	}
+	Channel *channel = this->getChannelByName(cmd.params[0]);
+	if (channel != NULL) {
+		if (channel->isClientInChan(client)) {
+			if (!cmd.hasTrailing) {
+				if (!channel->getTopic().empty())
+					return this->respond(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
+				else
+					return this->respond(client, RPL_NOTOPIC(channel->getName()));
+			}
+			else {
+				if (channel->isClientAdmin(client)) {
+					channel->setTopic(cmd.trailing);
+					channel->writeInChan(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
+				}
+				else {
+					std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
+					return this->respond(client, ERR_CHANOPRIVSNEEDED(client->getNickName(), channel->getName()));
+				}
+			}
+		}
+		else {
+			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+			return this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), channel->getName()));
+		}
+	}
+}
+
+/**
+ * @brief Command: PRIVMSG
+ *
+ * Parameters: <target> :<message>
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
 void Server::cmdPriv(Client *client, Parser cmd) {
 	if (cmd.params[0].empty())
 	{
@@ -251,7 +311,7 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 		return;
 	}
 
-	if (cmd.trailing.size() == 0){
+	if (!cmd.hasTrailing){
 		std::cout << RED"ERR_NOTEXTTOSEND"DEFAULT << std::endl;
 		this->respond(client, ERR_NOTEXTTOSEND(client->getNickName(), cmd.command));
 		return;
@@ -271,19 +331,19 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 			return;
 		}
 		else{
-			channel->writeInChan(client, RPL_PRIVMSG(cmd.params[0], cmd.trailing), false);
+			channel->writeInChan(client, cmd.trailing);
 		}
 		return;
 	}
 
 	Client *clienttest = this->getClientByNick(cmd.params[0]);
-	if (clienttest == NULL || !clienttest->getIsAuth()){
+	if (clienttest == NULL){
 		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
 		this->respond(client, ERR_NOSUCHNICK(client->getNickName(), cmd.command));
 		return;
 	}
 	else{
-		clienttest->write(":" + client->getPrefix() + " " + RPL_PRIVMSG(cmd.params[0], cmd.trailing));
+		clienttest->write(":" + client->getPrefix() + " :" + cmd.trailing);
 	}
 }
 

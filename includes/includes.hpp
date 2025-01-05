@@ -41,10 +41,11 @@ class Channel;
 # define ERR_NOSUCHNICK(nickname, command)			"401 " + nickname + " " + command + " :No such nick"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
-# define ERR_NOTONCHANNEL(channel)					"442 " + channel + " :You're not on that channel"
+# define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
 # define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
 # define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+# define ERR_CHANOPRIVSNEEDED(nickname, channel)	"482 " + nickname  + " " + channel + " :You're not channel operator"
 
 # define ERR_SHUTDOWN								"ERROR :Server shutting down"
 
@@ -58,7 +59,7 @@ class Channel;
 # define RPL_MYINFO(nickname, servName, version)	"004 " + nickname + " " + servername + " " + version + " <available user modes> <available channel modes>"
 
 # define RPL_NOTOPIC(channel)						"331 " + channel + " :No topic is set"
-# define RPL_TOPIC(nickname, channel, topic)		"332 " + nickname + " Topic for " + channel + " is: " + topic
+# define RPL_TOPIC(nickname, channel, topic)		"332 " + nickname + " " + channel + " :" + topic
 # define RPL_NAMREPLY(nickname, channel)			"353 " + nickname + " " + channel + " :"
 # define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of /NAMES list"
 
