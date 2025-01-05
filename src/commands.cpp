@@ -274,7 +274,7 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 			else {
 				if (channel->isClientAdmin(client)) {
 					channel->setTopic(cmd.trailing);
-					channel->writeInChan(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()));
+					channel->writeInChan(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()), true);
 				}
 				else {
 					std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
@@ -331,7 +331,7 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 			return;
 		}
 		else{
-			channel->writeInChan(client, cmd.trailing);
+			channel->writeInChan(client, cmd.trailing, false);
 		}
 		return;
 	}
@@ -365,7 +365,7 @@ void	Server::cmdMode(Client *client, Parser cmd)
 		}
 		if (!channeltest->isClientInChan(client)) {
 			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
-			this->respond(client, ERR_NOTONCHANNEL(cmd.params[0]));
+			this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), cmd.params[0]));
 			return;
 		}
 		//if (channeltest->)

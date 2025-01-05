@@ -89,7 +89,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 8
+# define NB_CMD 9
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);
