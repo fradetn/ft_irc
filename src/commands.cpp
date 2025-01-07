@@ -326,24 +326,22 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 	if (cmd.params[0][0] == '#'){
 		Channel *channel = this->getChannelByName(cmd.params[0]);
 		if (channel == NULL){
-			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
-			this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[0]));
-			return;
+			std::cout << RED"Channel " << cmd.params[0] << " does not exists." DEFAULT << std::endl;
 		}
 		else{
-			channel->writeInChan(client, cmd.trailing, false);
+			channel->writeInChan(client, RPL_PRIVMSG(cmd.params[0], cmd.trailing), false);
 		}
 		return;
 	}
 
 	Client *clienttest = this->getClientByNick(cmd.params[0]);
-	if (clienttest == NULL){
+	if (clienttest == NULL || !clienttest->getIsAuth()){
 		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
 		this->respond(client, ERR_NOSUCHNICK(client->getNickName(), cmd.command));
 		return;
 	}
 	else{
-		clienttest->write(":" + client->getPrefix() + " :" + cmd.trailing);
+		clienttest->write(":" + client->getPrefix() + " " + RPL_PRIVMSG(cmd.params[0], cmd.trailing));
 	}
 }
 
@@ -368,7 +366,59 @@ void	Server::cmdMode(Client *client, Parser cmd)
 			this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), cmd.params[0]));
 			return;
 		}
-		//if (channeltest->)
+		if (!channeltest->isClientAdmin(client)) {
+			std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
+			this->respond(client, ERR_CHANOPRIVSNEEDED(client->getNickName(), cmd.params[0]));
+			return;
+		}
+		if (cmd.params[1].empty()) {
+			std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+			this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+			return;
+		}
+		std::string allowed = "itkol-+";
+		if (cmd.params[1].find_first_not_of(allowed) != std::string::npos)
+		{
+			char c = cmd.params[1][cmd.params[1].find_first_not_of(allowed)];
+			std::cout << RED"ERR_UNKNOWNMODE"DEFAULT << std::endl;
+			this->respond(client, ERR_UNKNOWNMODE(client->getNickName(), c));
+			return;
+		}
+		char	sign;
+		if (cmd.params[1][0] != '+' || cmd.params[1][0] != '-')
+			sign = '+';
+		std::vector<char> mods;
+		size_t param_index = 2;
+		for (size_t i = 0; i < cmd.params[1].length(); ++i) {
+			if (cmd.params[1][i] == '+' || cmd.params[1][i] == '-') {
+				sign = cmd.params[1][i];
+			}
+			else {
+                if (cmd.params[1][i] == 'k') {
+					if (cmd.params.size() >= param_index + 1 && !cmd.params[param_index].empty()) {
+						channeltest->setKey(client, sign, cmd.params[param_index]);
+						param_index ++;
+					}
+            	}
+				if (cmd.params[1][i] == 'l') {
+					if (cmd.params.size() >= param_index + 1 && !cmd.params[param_index].empty()) {
+						channeltest->setLimit(client, sign, cmd.params[param_index]);
+						param_index ++;
+					}
+				}
+				if (cmd.params[1][i] == 'i') {
+					channeltest->setMods(sign, 'i');
+				}
+				if (cmd.params[1][i] == 't') {
+					channeltest->setMods(sign, 't');
+				}
+				if (cmd.params[1][i] == 'o') {
+					channeltest->setMods(sign, 'o');
+				}
+			}
+		}
+		if (!mods.empty()) {
+			
+		}
 	}
-
 }

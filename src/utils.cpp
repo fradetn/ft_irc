@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
+/*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 17:28:03 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/07 19:18:10 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,4 +69,12 @@ void handle_shutdown(int sig) {
 	(void) sig;
 	if (Server::isRunning)
 		Server::isRunning = false;
+}
+
+bool isDigits(const std::string& str) {
+    if (str.empty()) return false; // Vérifie si la chaîne est vide
+    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        if (!std::isdigit(*it)) return false;
+    }
+    return true;
 }

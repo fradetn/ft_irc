@@ -106,6 +106,48 @@ void	Channel::setTopic(std::string newTopic) {
 	this->topic = newTopic;
 }
 
+void	Channel::setMods(char sign, char mod) {
+	if (sign == '-')
+		this->mods.erase(mod);
+	else
+		this->mods.insert(mod);
+}
+
+void	Channel::setKey(Client *client,  char sign, std::string _key) {
+	if (sign == '-') {
+		if (_key == this->key && this->mods.count('k') == 1) {
+			this->key.clear();
+			this->setMods(sign, 'k');
+			this->writeInChan(client, RPL_MODE(this->name, "-k "), true);
+		}
+	}
+	else {
+		if (_key != this->key) {
+			this->key = _key;
+			this->setMods(sign, 'k');
+			this->writeInChan(client, RPL_MODE(this->name, "+k " + _key), true);
+		}
+	}
+}
+
+void	Channel::setLimit(Client *client, char sign, std::string _limit) {
+	if (sign == '-') {
+		this->limit = 1;
+		this->setMods(sign, 'l');
+		this->writeInChan(client, RPL_MODE(this->name, "-l "), true);
+	}
+	else {
+		if (isDigits(_limit)) {
+			size_t l = atoi(_limit.c_str());
+			if (l != this->limit) {
+			this->limit = l;
+			this->setMods(sign, 'l');
+			this->writeInChan(client, RPL_MODE(this->name, "+l " + _limit), true);
+			}
+		}
+	}
+}
+
 bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
 		newClient->respond(ERR_BANNEDFROMCHAN(this->name));

@@ -39,6 +39,7 @@ class Channel;
 # define ERR_NOTEXTTOSEND(nickname, command)		"412 " + nickname + " " + command + " :No text to send"
 # define ERR_TOOMANYTARGETS(nickname, command)		"407 " + nickname + " " + command + " :Duplicate recipients. No message delivered"
 # define ERR_NOSUCHNICK(nickname, command)			"401 " + nickname + " " + command + " :No such nick"
+# define ERR_UNKNOWNMODE(nickname, charac)			"472 " + nickname + " " + charac  + " :is unknown mode char to me"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
@@ -68,7 +69,8 @@ class Channel;
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 # define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
-# define RPL_PRIVMSG(target, message)		"PRIVMSG " + target + " :" + message
+# define RPL_PRIVMSG(target, message)				"PRIVMSG " + target + " :" + message
+# define RPL_MODE(target, message)					"MODE " + target + " " + message
 
 
 # define DEFAULT	"\033[0m"
@@ -101,6 +103,7 @@ typedef std::map<int, Client *>::iterator	clientsIt;
 
 void 						handle_shutdown(int sig);
 void 						makeSocketNonBlock(int fd);
+bool 						isDigits(const std::string& str);
 std::vector<std::string>	split(std::string toSplit, char delim);
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos);
 
