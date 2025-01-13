@@ -405,20 +405,25 @@ void	Server::cmdMode(Client *client, Parser cmd)
 						channeltest->setLimit(client, sign, cmd.params[param_index]);
 						param_index ++;
 					}
+					else if (sign == '-')
+						channeltest->setLimit(client, sign, "1");
 				}
 				if (cmd.params[1][i] == 'i') {
-					channeltest->setMods(sign, 'i');
+					channeltest->setMods(client, sign, 'i');
 				}
 				if (cmd.params[1][i] == 't') {
-					channeltest->setMods(sign, 't');
+					channeltest->setMods(client, sign, 't');
 				}
 				if (cmd.params[1][i] == 'o') {
-					channeltest->setMods(sign, 'o');
+					if (cmd.params.size() >= param_index + 1 && !cmd.params[param_index].empty()) {
+						Client *clienttest = this->getClientByNick(cmd.params[param_index]);
+						if (clienttest != NULL) {
+							channeltest->setOperator(client, clienttest, sign);
+						}
+						param_index ++;
+					}
 				}
 			}
-		}
-		if (!mods.empty()) {
-			
 		}
 	}
 }

@@ -106,25 +106,35 @@ void	Channel::setTopic(std::string newTopic) {
 	this->topic = newTopic;
 }
 
-void	Channel::setMods(char sign, char mod) {
-	if (sign == '-')
+void	Channel::setMods(Client *client, char sign, char mod) {
+	if (sign == '-') {
+		if (mod == 't')
+			this->writeInChan(client, RPL_MODE(this->name, "-t "), true);
+		if (mod == 'i')
+			this->writeInChan(client, RPL_MODE(this->name, "-i "), true);
 		this->mods.erase(mod);
-	else
+	}
+	else {
+		if (mod == 't')
+			this->writeInChan(client, RPL_MODE(this->name, "+t "), true);
+		if (mod == 'i')
+			this->writeInChan(client, RPL_MODE(this->name, "+i "), true);
 		this->mods.insert(mod);
+	}
 }
 
 void	Channel::setKey(Client *client,  char sign, std::string _key) {
 	if (sign == '-') {
 		if (_key == this->key && this->mods.count('k') == 1) {
 			this->key.clear();
-			this->setMods(sign, 'k');
+			this->setMods(client, sign, 'k');
 			this->writeInChan(client, RPL_MODE(this->name, "-k "), true);
 		}
 	}
 	else {
 		if (_key != this->key) {
 			this->key = _key;
-			this->setMods(sign, 'k');
+			this->setMods(client, sign, 'k');
 			this->writeInChan(client, RPL_MODE(this->name, "+k " + _key), true);
 		}
 	}
@@ -132,17 +142,39 @@ void	Channel::setKey(Client *client,  char sign, std::string _key) {
 
 void	Channel::setLimit(Client *client, char sign, std::string _limit) {
 	if (sign == '-') {
-		this->limit = 1;
-		this->setMods(sign, 'l');
-		this->writeInChan(client, RPL_MODE(this->name, "-l "), true);
+		std::cout << "test 1" << std::endl;
+		if (this->mods.count('l') == 1)
+		{
+			std::cout << "test 2" << std::endl;
+			this->limit = 1;
+			this->setMods(client, sign, 'l');
+			std::cout << "test 3" << std::endl;
+			this->writeInChan(client, RPL_MODE(this->name, "-l "), true);
+		}
 	}
 	else {
 		if (isDigits(_limit)) {
 			size_t l = atoi(_limit.c_str());
 			if (l != this->limit) {
-			this->limit = l;
-			this->setMods(sign, 'l');
-			this->writeInChan(client, RPL_MODE(this->name, "+l " + _limit), true);
+				this->limit = l;
+				this->setMods(client, sign, 'l');
+				this->writeInChan(client, RPL_MODE(this->name, "+l " + _limit), true);
+			}
+		}
+	}
+}
+
+void	Channel::setOperator(Client *client, Client *target, char sign) {
+	std::map<Client *, bool>::iterator it;
+	for (it = this->clientList.begin(); it != this->clientList.end(); ++it) {
+		if (it->first == target) {
+			if (sign == '-' && it->second == true) {
+				it->second = false;
+				this->writeInChan(client, RPL_MODE(this->name, "-o " + target->getNickName()), true);
+			}
+			else if (sign == '+' && it->second == false) {
+				it->second = true;
+				this->writeInChan(client, RPL_MODE(this->name, "+o " + target->getNickName()), true);
 			}
 		}
 	}
