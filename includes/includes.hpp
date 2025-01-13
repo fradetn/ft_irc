@@ -41,10 +41,11 @@ class Channel;
 # define ERR_NOSUCHNICK(nickname, command)			"401 " + nickname + " " + command + " :No such nick"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
+# define ERR_USERNOTINCHANNEL(nickname, channel)	"441 " + nickname + " " + channel + " :They aren't on that channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
-# define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
-# define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
-# define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+# define ERR_CHANNELISFULL(nick, channel)			"471 " + nick + " " + channel + " :Cannot join channel (+l)"
+# define ERR_BANNEDFROMCHAN(nick, channel)			"474 " + nick + " " + channel + " :Cannot join channel (+b)"
+# define ERR_BADCHANNELKEY(nick, channel)			"475 " + nick + " " + channel + " :Cannot join channel (+k)"
 # define ERR_CHANOPRIVSNEEDED(nickname, channel)	"482 " + nickname  + " " + channel + " :You're not channel operator"
 
 # define ERR_SHUTDOWN								"ERROR :Server shutting down"
@@ -89,7 +90,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 8
+# define NB_CMD 9
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);

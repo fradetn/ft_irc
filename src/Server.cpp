@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/04 02:44:52 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/07 17:20:53 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ Server::Server(int _port, std::string _passWord) : passWord(_passWord), port(_po
 }
 
 Server::~Server() {
-	
 }
 
 /* -------------------------------------------------------------------------- */
@@ -64,7 +63,7 @@ void Server::createSocket(void) {
 		close(this->serverFd);
 		throw std::runtime_error("Error: listen failed");
 	}
-		// Récupérer l'adresse réelle liée au socket
+	// Récupérer l'adresse réelle liée au socket
 	sockaddr_in actualAddr;
 	socklen_t addrLen = sizeof(actualAddr);
 	if (getsockname(this->serverFd, (struct sockaddr *)&actualAddr, &addrLen) == -1) {

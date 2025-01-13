@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2024/12/23 17:28:03 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/07 16:37:58 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include "Server.hpp"
 
 void makeSocketNonBlock(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 }
 
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos) {

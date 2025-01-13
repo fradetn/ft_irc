@@ -6,19 +6,14 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/04 02:46:33 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/08 16:09:50 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-
 #include "includes.hpp"
-
-class Client;
-class Parser;
-class Channel;
 
 class Server
 {
@@ -38,7 +33,6 @@ private:
 	
 	std::vector<Parser>		parsedMessages;
 
-	
 	//=====================//
 	//  Private Functions  //
 	//=====================//
@@ -93,6 +87,7 @@ public:
 	void cmdPart(Client *client, Parser cmd);
 	void cmdTopic(Client *client, Parser cmd);
 	void cmdPriv(Client *client, Parser cmd);
+	void cmdKick(Client *client, Parser cmd);
 
 };
 
