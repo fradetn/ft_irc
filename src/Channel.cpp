@@ -182,11 +182,13 @@ void	Channel::setOperator(Client *client, Client *target, char sign) {
 
 bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
-		newClient->respond(ERR_BANNEDFROMCHAN(this->name));
+		std::cout << RED"ERR_BANNEDFROMCHAN"DEFAULT << std::endl;
+		newClient->respond(ERR_BANNEDFROMCHAN(newClient->getNickName(), this->name));
 		return (false);
 	}
 	if (this->limit != 0 && this->clientList.size() >= this->limit) {
-		newClient->respond(ERR_CHANNELISFULL(this->name));
+		std::cout << RED"ERR_CHANNELISFULL"DEFAULT << std::endl;
+		newClient->respond(ERR_CHANNELISFULL(newClient->getNickName(), this->name));
 		return (false);
 	}
 	if (!this->isClientInChan(newClient)) {
@@ -199,11 +201,19 @@ bool Channel::addNewClient(Client *newClient, std::string _key) {
 			return (true);
 		}
 		else {
-			newClient->respond(ERR_BADCHANNELKEY(this->name));
+			std::cout << RED"ERR_BADCHANNELKEY"DEFAULT << std::endl;
+			newClient->respond(ERR_BADCHANNELKEY(newClient->getNickName(), this->name));
 			return (false);
 		}
 	}
 	return (false);
+}
+
+void Channel::banClient(Client *client) {
+	if (this->isClientInChan(client) == true) {
+		this->clientList.erase(client);
+		this->banned.push_back(client);
+	}
 }
 
 bool Channel::removeClient(Client *client) {

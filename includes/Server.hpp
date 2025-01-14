@@ -3,22 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/05 22:00:19 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:41:22 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-
 #include "includes.hpp"
-
-class Client;
-class Parser;
-class Channel;
 
 class Server
 {
@@ -38,7 +33,6 @@ private:
 	
 	std::vector<Parser>		parsedMessages;
 
-	
 	//=====================//
 	//  Private Functions  //
 	//=====================//
@@ -94,6 +88,7 @@ public:
 	void cmdTopic(Client *client, Parser cmd);
 	void cmdPriv(Client *client, Parser cmd);
 	void cmdMode(Client *client, Parser cmd);
+	void cmdKick(Client *client, Parser cmd);
 
 };
 

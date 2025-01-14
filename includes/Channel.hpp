@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Channel.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/13 19:49:10 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:40:09 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ private:
 
 	//		 client  , isAdmin
 	std::map<Client *, bool>	clientList;
+	std::vector<Client *> 		invited;
 	std::vector<Client *>		banned;
 	std::set<char>				mods;
 
@@ -52,6 +53,7 @@ public:
 
 	void writeInChan(Client *client, std::string message, bool sendToMe);
 	
+	void banClient(Client *client);
 	bool removeClient(Client *client);
 	bool addNewClient(Client *newClient, std::string key);
 	bool isClientInChan(Client *client);
