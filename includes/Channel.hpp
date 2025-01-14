@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/13 17:01:19 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/14 16:25:28 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ private:
 
 	//		 client  , isAdmin
 	std::map<Client *, bool> clientList;
+	std::vector<Client *> invited;
 	std::vector<Client *> banned;
 
 	std::string key;
