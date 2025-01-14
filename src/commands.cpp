@@ -452,9 +452,9 @@ void Server::cmdKick(Client *client, Parser cmd) {
 			Client *toKick = this->getClientByNick(cmd.params[1]);
 			if (toKick != NULL && channel->isClientInChan(toKick) && toKick->getNickName() != client->getNickName()) {
 				if (cmd.hasTrailing)
-					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), cmd.trailing));
+					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), cmd.trailing), true);
 				else
-					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), "You've been banned"));
+					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), "You've been banned"), true);
 				channel->banClient(toKick);
 			}
 			else {
