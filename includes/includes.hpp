@@ -44,9 +44,10 @@ class Channel;
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
-# define ERR_CHANNELISFULL(channel)					"471 " + channel + " :Cannot join channel (+l)"
-# define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
-# define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
+# define ERR_CHANNELISFULL(nick, channel)			"471 " + nick + " " + channel + " :Cannot join channel (+l)"
+# define ERR_INVITEONLYCHAN(channel)				"473 " + channel + " :Cannot join channel (+i)"
+# define ERR_BANNEDFROMCHAN(nick, channel)			"474 " + nick + " " + channel + " :Cannot join channel (+b)"
+# define ERR_BADCHANNELKEY(nick, channel)			"475 " + nick + " " + channel + " :Cannot join channel (+k)"
 # define ERR_CHANOPRIVSNEEDED(nickname, channel)	"482 " + nickname  + " " + channel + " :You're not channel operator"
 # define ERR_USERNOTINCHANNEL(nick, target, chan)	"441 " + nick + " " + target + " " + chan + " :They aren't on that channel"
 
@@ -94,7 +95,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 9
+# define NB_CMD 10
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);

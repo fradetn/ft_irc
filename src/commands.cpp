@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE", "KICK"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode, &Server::cmdKick};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -80,8 +80,8 @@ void Server::cmdNick(Client *client, Parser cmd) {
 				this->respond(client, RPL_WELCOME(client->getNickName(), client->getPrefix()));
 				client->setIsAuth(true);
 			}
-		else
-			this->sendMessToAllCommonUsers(client, RPL_NICK(oldNick, client->getNickName()));
+			else
+				this->sendMessToAllCommonUsers(client, RPL_NICK(oldNick, client->getNickName()));
 		}
 		else {
 			std::cout << RED"ERR_NICKNAMEINUSE"DEFAULT << std::endl;
@@ -152,8 +152,9 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 
 		std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
 		std::vector<Channel *>::iterator ite;
-		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite)
+		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite) {
 			std::cout << (*ite)->getName() << std::endl;
+		}
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {
@@ -298,8 +299,7 @@ void Server::cmdTopic(Client *client, Parser cmd) {
  * @param cmd Parsed command line
  */
 void Server::cmdPriv(Client *client, Parser cmd) {
-	if (cmd.params[0].empty())
-	{
+	if (cmd.params[0].empty()) {
 		std::cout << RED"ERR_NORECIPIENT"DEFAULT << std::endl;
 		this->respond(client, ERR_NORECIPIENT(client->getNickName(), cmd.command));
 		return;
@@ -478,5 +478,51 @@ void	Server::cmdMode(Client *client, Parser cmd)
 				}
 			}
 		}
+	}
+}
+
+
+/**
+ * @brief Command: KICK
+ *
+ * Parameters: <channel> <user> [:<comment>]
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
+void Server::cmdKick(Client *client, Parser cmd) {
+	if (cmd.params.size() < 2) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+	Channel *channel = this->getChannelByName(cmd.params[0]);
+	if (channel != NULL) {
+		if (channel->isClientInChan(client) == false) {
+			std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+			return this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), channel->getName()));
+		}
+		else if (channel->isClientAdmin(client) == true) {
+			Client *toKick = this->getClientByNick(cmd.params[1]);
+			if (toKick != NULL && channel->isClientInChan(toKick) && toKick->getNickName() != client->getNickName()) {
+				if (cmd.hasTrailing)
+					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), cmd.trailing), true);
+				else
+					channel->writeInChan(client, RPL_KICK(channel->getName(), toKick->getNickName(), "You've been banned"), true);
+				channel->banClient(toKick);
+			}
+			else {
+				std::cout << RED"ERR_USERNOTINCHANNEL"DEFAULT << std::endl;
+				this->respond(client, ERR_USERNOTINCHANNEL(client->getNickName(), cmd.params[1], channel->getName()));
+			}
+		}
+		else {
+			std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
+			return this->respond(client, ERR_CHANOPRIVSNEEDED(client->getNickName(), channel->getName()));
+		}
+	}
+	else {
+		std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+		return this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[0]));
 	}
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
+/*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/09 14:34:46 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/07 19:18:10 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/14 16:45:10 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include "Server.hpp"
 
 void makeSocketNonBlock(int fd) {
-	int flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 }
 
 bool getStringUntil(const std::string& input, std::string& result, char delimiter, size_t& startPos) {

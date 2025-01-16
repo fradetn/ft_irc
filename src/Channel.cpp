@@ -41,7 +41,6 @@ std::string Channel::getTopic() const {
 	return (this->topic);
 }
 
-
 std::vector<Client *> Channel::getClients() const{
 	std::vector<Client *> clients;
 	std::map<Client *, bool>::const_iterator it;
@@ -114,6 +113,15 @@ bool Channel::isClientAdmin(Client *client) {
 
 	for (it = this->clientList.begin(); it != this->clientList.end(); ++it)
 		if (client == (*it).first && (*it).second == true)
+			return (true);
+	return (false);
+}
+
+bool Channel::isClientInvited(Client *client) {
+	std::vector<Client *>::iterator it;
+
+	for (it = this->invited.begin(); it != this->invited.end(); ++it)
+		if (client == (*it))
 			return (true);
 	return (false);
 }
@@ -203,14 +211,27 @@ void	Channel::setOperator(Client *client, Client *target, char sign) {
 
 bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
-		newClient->respond(ERR_BANNEDFROMCHAN(this->name));
+		std::cout << RED"ERR_BANNEDFROMCHAN"DEFAULT << std::endl;
+		newClient->respond(ERR_BANNEDFROMCHAN(newClient->getNickName(), this->name));
 		return (false);
 	}
 	if (this->limit != 0 && this->clientList.size() >= this->limit) {
-		newClient->respond(ERR_CHANNELISFULL(this->name));
+		std::cout << RED"ERR_CHANNELISFULL"DEFAULT << std::endl;
+		newClient->respond(ERR_CHANNELISFULL(newClient->getNickName(), this->name));
 		return (false);
 	}
 	if (!this->isClientInChan(newClient)) {
+		if (this->mods.count('i') > 0) {
+			if (this->isClientInvited(newClient)) {
+				this->clientList[newClient] = false;
+				return (true);
+			}
+			else {
+				std::cout << RED"ERR_INVITEONLYCHAN"DEFAULT << std::endl;
+				newClient->respond(ERR_INVITEONLYCHAN(this->name));
+				return (false);
+			}
+		}
 		if (this->key.empty()) {
 			this->clientList[newClient] = false;
 			return (true);
@@ -220,11 +241,19 @@ bool Channel::addNewClient(Client *newClient, std::string _key) {
 			return (true);
 		}
 		else {
-			newClient->respond(ERR_BADCHANNELKEY(this->name));
+			std::cout << RED"ERR_BADCHANNELKEY"DEFAULT << std::endl;
+			newClient->respond(ERR_BADCHANNELKEY(newClient->getNickName(), this->name));
 			return (false);
 		}
 	}
 	return (false);
+}
+
+void Channel::banClient(Client *client) {
+	if (this->isClientInChan(client) == true) {
+		this->clientList.erase(client);
+		this->banned.push_back(client);
+	}
 }
 
 bool Channel::removeClient(Client *client) {
