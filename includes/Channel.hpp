@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/14 16:40:09 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/16 16:21:44 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ public:
 	std::string getName() const;
 	std::string getTopic() const;
 	std::vector<Client *> getClients() const;
-	std::string getKey() const;
 
 	void	setTopic(std::string newTopic);
 	void	setMods(Client *client, char sign, char mod);
@@ -59,6 +58,7 @@ public:
 	bool isClientInChan(Client *client);
 	bool isClientAdmin(Client *client);
 	bool isClientBanned(Client *client);
+	bool isClientInvited(Client *client);
 	bool isOneAdminInChan();
 };
 

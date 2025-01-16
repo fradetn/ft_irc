@@ -80,8 +80,8 @@ void Server::cmdNick(Client *client, Parser cmd) {
 				this->respond(client, RPL_WELCOME(client->getNickName(), client->getPrefix()));
 				client->setIsAuth(true);
 			}
-		else
-			this->sendMessToAllCommonUsers(client, RPL_NICK(oldNick, client->getNickName()));
+			else
+				this->sendMessToAllCommonUsers(client, RPL_NICK(oldNick, client->getNickName()));
 		}
 		else {
 			std::cout << RED"ERR_NICKNAMEINUSE"DEFAULT << std::endl;
@@ -152,8 +152,9 @@ void Server::cmdJoin(Client *client, Parser cmd) {
 
 		std::cout << MAGENTA"Channels list: "DEFAULT << std::endl;
 		std::vector<Channel *>::iterator ite;
-		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite)
+		for (ite = this->channels.begin(); ite != this->channels.end(); ++ite) {
 			std::cout << (*ite)->getName() << std::endl;
+		}
 		return;
 	}
 	else if (cmd.params.size() < 1 || cmd.params.size() > 2) {

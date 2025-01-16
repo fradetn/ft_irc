@@ -45,6 +45,7 @@ class Channel;
 # define ERR_USERNOTINCHANNEL(nickname, channel)	"441 " + nickname + " " + channel + " :They aren't on that channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
 # define ERR_CHANNELISFULL(nick, channel)			"471 " + nick + " " + channel + " :Cannot join channel (+l)"
+# define ERR_INVITEONLYCHAN(channel)				"473 " + channel + " :Cannot join channel (+i)"
 # define ERR_BANNEDFROMCHAN(nick, channel)			"474 " + nick + " " + channel + " :Cannot join channel (+b)"
 # define ERR_BADCHANNELKEY(nick, channel)			"475 " + nick + " " + channel + " :Cannot join channel (+k)"
 # define ERR_CHANOPRIVSNEEDED(nickname, channel)	"482 " + nickname  + " " + channel + " :You're not channel operator"

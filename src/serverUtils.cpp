@@ -98,6 +98,7 @@ std::set<Client *> Server::getChanCommonUsers(Client *client) {
 			common.insert(cli.begin(), cli.end());
 		}
 	}
+	common.insert(client);
 	return (common);
 }
 
