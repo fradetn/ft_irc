@@ -6,7 +6,7 @@
 /*   By: asangerm <asangerm@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/13 19:49:10 by asangerm         ###   ########.fr       */
+/*   Updated: 2025/01/16 17:20:22 by asangerm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,8 @@ public:
 	std::string getTopic() const;
 	std::vector<Client *> getClients() const;
 	std::string getKey() const;
+	std::set<char> getMods() const;
+	std::string getModsForReply() const;
 
 	void	setTopic(std::string newTopic);
 	void	setMods(Client *client, char sign, char mod);

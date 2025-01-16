@@ -66,6 +66,22 @@ std::string Channel::getListMessage(Client *client) {
 	return (list);
 }
 
+std::set<char> Channel::getMods() const
+{
+	return this->mods;
+}
+
+std::string Channel::getModsForReply() const
+{
+	std::set<char>::iterator it;
+	std::string reply = "";
+	if (!this->mods.empty())
+		reply += '+';
+	for (it = this->mods.begin(); it != this->mods.end(); ++it)
+		reply += *it;
+	return reply;
+}
+
 bool Channel::isClientInChan(Client *client) {
 	std::map<Client *, bool>::iterator it;
 
@@ -123,16 +139,21 @@ void	Channel::setMods(Client *client, char sign, char mod) {
 	}
 }
 
-void	Channel::setKey(Client *client,  char sign, std::string _key) {
-	if (sign == '-') {
-		if (_key == this->key && this->mods.count('k') == 1) {
+void	Channel::setKey(Client *client,  char sign, std::string _key)
+{
+	if (sign == '-')
+	{
+		if (_key == this->key && this->mods.count('k') == 1)
+		{
 			this->key.clear();
 			this->setMods(client, sign, 'k');
 			this->writeInChan(client, RPL_MODE(this->name, "-k "), true);
 		}
 	}
-	else {
-		if (_key != this->key) {
+	else
+	{
+		if (_key != this->key)
+		{
 			this->key = _key;
 			this->setMods(client, sign, 'k');
 			this->writeInChan(client, RPL_MODE(this->name, "+k " + _key), true);

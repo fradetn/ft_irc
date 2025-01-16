@@ -40,6 +40,7 @@ class Channel;
 # define ERR_TOOMANYTARGETS(nickname, command)		"407 " + nickname + " " + command + " :Duplicate recipients. No message delivered"
 # define ERR_NOSUCHNICK(nickname, command)			"401 " + nickname + " " + command + " :No such nick"
 # define ERR_UNKNOWNMODE(nickname, charac)			"472 " + nickname + " " + charac  + " :is unknown mode char to me"
+# define ERR_KEYSET(nickname, channel)				"467 " + nickname + " " + channel + " :Channel key already set"
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
@@ -47,6 +48,7 @@ class Channel;
 # define ERR_BANNEDFROMCHAN(channel)				"474 " + channel + " :Cannot join channel (+b)"
 # define ERR_BADCHANNELKEY(channel)					"475 " + channel + " :Cannot join channel (+k)"
 # define ERR_CHANOPRIVSNEEDED(nickname, channel)	"482 " + nickname  + " " + channel + " :You're not channel operator"
+# define ERR_USERNOTINCHANNEL(nick, target, chan)	"441 " + nick + " " + target + " " + chan + " :They aren't on that channel"
 
 # define ERR_SHUTDOWN								"ERROR :Server shutting down"
 
@@ -71,6 +73,7 @@ class Channel;
 # define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
 # define RPL_PRIVMSG(target, message)				"PRIVMSG " + target + " :" + message
 # define RPL_MODE(target, message)					"MODE " + target + " " + message
+# define RPL_CHANNELMODEIS(nick, chan, mods)		"324 " + nick + " " + chan + " " + mods
 
 
 # define DEFAULT	"\033[0m"
