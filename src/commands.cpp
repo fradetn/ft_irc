@@ -416,7 +416,7 @@ void	Server::cmdMode(Client *client, Parser cmd)
 			{
                 if (cmd.params[1][i] == 'k')
 				{
-					if (channeltest->getMods().count('k') == 1)
+					if (channeltest->getMods().count('k') == 1 && sign == '+')
 					{
 						std::cout << RED"ERR_KEYSET"DEFAULT << std::endl;
 						this->respond(client,  ERR_KEYSET(client->getNickName(), channeltest->getName()));
