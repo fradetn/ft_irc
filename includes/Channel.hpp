@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/16 18:46:43 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/20 11:49:12 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ public:
 	void writeInChan(Client *client, std::string message, bool sendToMe);
 	
 	void banClient(Client *client);
+	bool inviteClient(Client *client);
 	bool removeClient(Client *client);
 	bool addNewClient(Client *newClient, std::string key);
 	bool isClientInChan(Client *client);

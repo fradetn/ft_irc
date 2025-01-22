@@ -15,11 +15,12 @@ Client::Client() {
 	this->buffer = "";
 }
 
-Client::Client(int _fd, std::string const &_hostname) {
+Client::Client(int _fd, std::string const &_hostname, pollfd *_pfd) {
 	this->fd = _fd;
 	this->nickName = "";
 	this->userName = "";
 	this->hostName = _hostname;
+	this->pfd = _pfd;
 	this->isAuth = false;
 	this->isLog = false;
 	this->toBeDeleted = false;
@@ -77,8 +78,6 @@ void Client::setToBeDeleted(bool _toBeDeleted) {
 	this->toBeDeleted = _toBeDeleted;
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 /*                                  Functions                                 */
 /* -------------------------------------------------------------------------- */
@@ -91,13 +90,20 @@ std::string Client::getPrefix() const {
 }
 
 void Client::write(std::string const &message) const {
-	std::string buf = message + "\r\n";
-	if (send(this->fd, buf.c_str(), buf.length(), 0) == -1)
-		throw std::runtime_error("Error: sending a message failed");
+	if ((this->pfd->revents & POLLOUT) == POLLOUT) {
+		std::string buf = message + "\r\n";
+		if (send(this->fd, buf.c_str(), buf.length(), 0) == -1)
+			throw std::runtime_error("Error: sending a message failed");
+	}
 }
 
 void Client::respond(std::string const &message) const {
-	this->write(":" + this->getPrefix() + " " + message);
+	std::string prefix = this->getPrefix();
+
+	if (prefix.empty())
+		this->write(message);
+	else
+		this->write(":" + prefix + " " + message);
 }
 
 void Client::appendToBuffer(const char *receiveBuffer, size_t length) {

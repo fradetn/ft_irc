@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:52:41 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/05 15:29:09 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/20 11:39:59 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ private:
 	std::string	nickName;
 	std::string	userName;
 	std::string	hostName;
+	pollfd		*pfd;
 	bool		isAuth;
 	bool		isLog;
 	bool		toBeDeleted;
@@ -31,7 +32,7 @@ private:
 
 public:
 	Client();
-	Client(int _fd, std::string const &_hostname);
+	Client(int _fd, std::string const &_hostname, pollfd *_pfd);
 	~Client();
 
 	int getFd() const;

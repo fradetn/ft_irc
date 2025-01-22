@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/07 17:20:53 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/20 11:41:13 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,9 +123,9 @@ void Server::handleEvent(size_t &i) {
 			struct hostent *host = gethostbyaddr(&(addr.sin_addr), sizeof(addr.sin_addr), AF_INET);
 
 			makeSocketNonBlock(clientFd);
-			pollfd pfd = {clientFd, POLLIN, 0};
+			pollfd pfd = {clientFd, POLLIN | POLLOUT, 0};
 			this->pollFds.push_back(pfd);
-			this->clients[clientFd] = new Client(clientFd, host->h_name);
+			this->clients[clientFd] = new Client(clientFd, host->h_name, &this->pollFds.back());
 			std::cout << GREEN"New connection accepted"DEFAULT", socketFd: " << clientFd << std::endl;
 		}
 	}
@@ -200,5 +200,9 @@ void Server::rmCliFromAllChan(Client *client) {
 }
 
 void Server::respond(Client *client, std::string message) {
-	client->write(":" + this->getPrefix() + " " + message);
+	std::string prefix = this->getPrefix();
+	if (prefix.empty())
+		client->write(message);
+	else
+		client->write(":" + prefix + " " + message);
 }

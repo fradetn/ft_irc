@@ -256,6 +256,14 @@ void Channel::banClient(Client *client) {
 	}
 }
 
+bool Channel::inviteClient(Client *client) {
+	if (!this->isClientInvited(client)) {
+		this->invited.push_back(client);
+		return (true);
+	}
+	return (false);
+}
+
 bool Channel::removeClient(Client *client) {
 	if (this->isClientInChan(client) == true) {
 		this->clientList.erase(client);

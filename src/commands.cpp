@@ -6,8 +6,8 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE", "KICK"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode, &Server::cmdKick};
+	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE", "KICK", "INVITE"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode, &Server::cmdKick, &Server::cmdInvite};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
@@ -273,7 +273,7 @@ void Server::cmdTopic(Client *client, Parser cmd) {
 					return this->respond(client, RPL_NOTOPIC(channel->getName()));
 			}
 			else {
-				if (channel->isClientAdmin(client)) {
+				if (!channel->getMods().count('t') || (channel->getMods().count('t') && channel->isClientAdmin(client))) {
 					channel->setTopic(cmd.trailing);
 					channel->writeInChan(client, RPL_TOPIC(client->getNickName(), channel->getName(), channel->getTopic()), true);
 				}
@@ -524,5 +524,50 @@ void Server::cmdKick(Client *client, Parser cmd) {
 	else {
 		std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
 		return this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[0]));
+	}
+}
+
+void Server::cmdInvite(Client *client, Parser cmd) {
+	if (cmd.params.size() < 2) {
+		std::cout << RED"ERR_NEEDMOREPARAMS"DEFAULT << std::endl;
+		this->respond(client, ERR_NEEDMOREPARAMS(client->getNickName(), cmd.command));
+		return;
+	}
+	Client *invited = this->getClientByNick(cmd.params[0]);
+	if (invited != NULL) {
+		Channel *channel = this->getChannelByName(cmd.params[1]);
+		if (channel != NULL) {
+			if (channel->isClientInChan(client)) {
+				if (!channel->isClientInChan(invited)) {
+					if (!channel->getMods().count('i') || (channel->getMods().count('i') && channel->isClientAdmin(client))) {
+						if (channel->inviteClient(invited)) {
+							this->respond(client, RPL_INVITING(client->getNickName(), invited->getNickName(), channel->getName()));
+							// this->respond(invited, RPL_INVITING(client->getNickName(), invited->getNickName(), channel->getName()));
+							invited->write(client->getPrefix() + " INVITE " +  invited->getNickName() + " " + channel->getName());
+						}
+					}
+					else {
+						std::cout << RED"ERR_CHANOPRIVSNEEDED"DEFAULT << std::endl;
+						return this->respond(client, ERR_CHANOPRIVSNEEDED(client->getNickName(), cmd.params[1]));
+					}
+				}
+				else {
+					std::cout << RED"ERR_USERONCHANNEL"DEFAULT << std::endl;
+					return this->respond(client, ERR_USERONCHANNEL(client->getNickName(), cmd.params[1]));
+				}
+			}
+			else {
+				std::cout << RED"ERR_NOTONCHANNEL"DEFAULT << std::endl;
+				return this->respond(client, ERR_NOTONCHANNEL(client->getNickName(), cmd.params[1]));
+			}
+		}
+		else {
+			std::cout << RED"ERR_NOSUCHCHANNEL"DEFAULT << std::endl;
+			return this->respond(client, ERR_NOSUCHCHANNEL(cmd.params[1]));
+		}
+	}
+	else {
+		std::cout << RED"ERR_NOSUCHNICK"DEFAULT << std::endl;
+		return this->respond(client, ERR_NOSUCHNICK(cmd.params[0], cmd.command));
 	}
 }

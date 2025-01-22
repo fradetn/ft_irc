@@ -1,5 +1,5 @@
 #ifndef INCLUDES_HPP
-#define INCLUDES_HPP
+# define INCLUDES_HPP
 
 #include <map>
 #include <set>
@@ -44,6 +44,7 @@ class Channel;
 // Erreurs liées aux channels
 # define ERR_NOSUCHCHANNEL(channel)					"403 " + channel + " :No such channel"
 # define ERR_NOTONCHANNEL(nickname, channel)		"442 " + nickname + " " + channel + " :You're not on that channel"
+# define ERR_USERONCHANNEL(nickname, channel)		"443 " + nickname + " " + channel + " :is already on channel"
 # define ERR_CHANNELISFULL(nick, channel)			"471 " + nick + " " + channel + " :Cannot join channel (+l)"
 # define ERR_INVITEONLYCHAN(channel)				"473 " + channel + " :Cannot join channel (+i)"
 # define ERR_BANNEDFROMCHAN(nick, channel)			"474 " + nick + " " + channel + " :Cannot join channel (+b)"
@@ -75,7 +76,7 @@ class Channel;
 # define RPL_PRIVMSG(target, message)				"PRIVMSG " + target + " :" + message
 # define RPL_MODE(target, message)					"MODE " + target + " " + message
 # define RPL_CHANNELMODEIS(nick, chan, mods)		"324 " + nick + " " + chan + " " + mods
-
+# define RPL_INVITING(nick, invited, chan)			"341 " + nick + " " + invited + " " + chan
 
 # define DEFAULT	"\033[0m"
 # define RED		"\033[31m"
@@ -95,7 +96,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 10
+# define NB_CMD 11
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);

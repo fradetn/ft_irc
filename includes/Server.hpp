@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/14 16:41:22 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/17 18:26:31 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ public:
 	void cmdPriv(Client *client, Parser cmd);
 	void cmdMode(Client *client, Parser cmd);
 	void cmdKick(Client *client, Parser cmd);
+	void cmdInvite(Client *client, Parser cmd);
 
 };
 
