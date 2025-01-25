@@ -209,6 +209,15 @@ void	Channel::setOperator(Client *client, Client *target, char sign) {
 	}
 }
 
+std::vector<Client *>::iterator Channel::getInvitedIt(Client *client) {
+	std::vector<Client *>::iterator it;
+
+	for (it = this->invited.begin(); it != this->invited.end(); ++it)
+		if (client == (*it))
+			return (it);
+	return (it);
+}
+
 bool Channel::addNewClient(Client *newClient, std::string _key) {
 	if (this->isClientBanned(newClient)) {
 		std::cout << RED"ERR_BANNEDFROMCHAN"DEFAULT << std::endl;
@@ -224,6 +233,7 @@ bool Channel::addNewClient(Client *newClient, std::string _key) {
 		if (this->mods.count('i') > 0) {
 			if (this->isClientInvited(newClient)) {
 				this->clientList[newClient] = false;
+				this->invited.erase(this->getInvitedIt(newClient));
 				return (true);
 			}
 			else {

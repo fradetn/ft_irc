@@ -539,11 +539,14 @@ void Server::cmdInvite(Client *client, Parser cmd) {
 		if (channel != NULL) {
 			if (channel->isClientInChan(client)) {
 				if (!channel->isClientInChan(invited)) {
-					if (!channel->getMods().count('i') || (channel->getMods().count('i') && channel->isClientAdmin(client))) {
+					if (!channel->getMods().count('i') && !channel->isClientAdmin(client))  {
+							this->respond(client, RPL_INVITING(client->getNickName(), invited->getNickName(), channel->getName()));
+							invited->write(":" + client->getPrefix() + " INVITE " +  invited->getNickName() + " :" + channel->getName());
+					}
+					else if (channel->isClientAdmin(client)) {
 						if (channel->inviteClient(invited)) {
 							this->respond(client, RPL_INVITING(client->getNickName(), invited->getNickName(), channel->getName()));
-							// this->respond(invited, RPL_INVITING(client->getNickName(), invited->getNickName(), channel->getName()));
-							invited->write(client->getPrefix() + " INVITE " +  invited->getNickName() + " " + channel->getName());
+							invited->write(":" + client->getPrefix() + " INVITE " +  invited->getNickName() + " :" + channel->getName());
 						}
 					}
 					else {

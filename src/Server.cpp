@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/20 11:41:13 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/22 17:56:22 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void Server::createSocket(void) {
 void Server::run() {
 	std::cout << GREEN"Server listening on port "DEFAULT << this->port << std::endl;
 	while (Server::isRunning) {
-		int polCount = poll(this->pollFds.data(), this->pollFds.size(), -1);
+		int polCount = poll(&this->pollFds[0], this->pollFds.size(), -1);
 		if (!Server::isRunning)
 			continue;
 		if (polCount < 0) {

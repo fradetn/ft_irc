@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <deque>
 #include <poll.h>
 #include <netdb.h>
 #include <cstring>
@@ -102,7 +103,7 @@ class Channel;
 typedef void (Server::*cmdFunc_t)(Client *, Parser);
 
 typedef std::vector<Parser>::iterator		parserIt;
-typedef std::vector<pollfd>::iterator		pollFdIt;
+typedef std::deque<pollfd>::iterator		pollFdIt;
 typedef std::vector<Channel *>::iterator	channelIt;
 typedef std::map<int, Client *>::iterator	clientsIt;
 

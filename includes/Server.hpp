@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/17 18:26:31 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/22 17:52:56 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ private:
 	int 					serverFd;
 	std::string 			passWord;
 	unsigned int 			port;
-	std::vector<pollfd> 	pollFds;
+	std::deque<pollfd> 		pollFds;
 	std::map<int, Client*>	clients;
 	std::vector<Channel*>	channels;
 	std::string				hostname;

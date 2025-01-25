@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/11 17:42:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/20 11:49:12 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/25 16:15:37 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ public:
 	void	setOperator(Client *client, Client *target, char sign);
 
 	std::string getListMessage(Client *client);
+	std::vector<Client *>::iterator getInvitedIt(Client *client);
 
 	void writeInChan(Client *client, std::string message, bool sendToMe);
 	
