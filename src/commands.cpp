@@ -6,18 +6,18 @@
 
 void Server::handleCommands(Client *client) {
 	parserIt it = this->parsedMessages.begin();
-	std::string commandsStr[NB_CMD] = {"PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "MODE", "KICK", "INVITE"};
-	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdMode, &Server::cmdKick, &Server::cmdInvite};
+	std::string commandsStr[NB_CMD] = {"CAP", "PASS", "NICK", "USER", "QUIT", "JOIN", "PART", "TOPIC", "PRIVMSG", "NOTICE", "MODE", "KICK", "INVITE"};
+	cmdFunc_t	commandsFunc[NB_CMD] = {&Server::cmdCap, &Server::cmdPass, &Server::cmdNick, &Server::cmdUser, &Server::cmdQuit, &Server::cmdJoin, &Server::cmdPart, &Server::cmdTopic, &Server::cmdPriv, &Server::cmdNotice, &Server::cmdMode, &Server::cmdKick, &Server::cmdInvite};
 
 	while (this->parsedMessages.size() >= 1) {
 		int i;
 		for (i = 0; i < NB_CMD && commandsStr[i] != (*it).command; i++){}
 		// std::cout << "i = " << i << std::endl;
-		if ((i == 1 || i == 2) && !client->getIsLog()) {
+		if ((i == 2 || i == 3) && !client->getIsLog()) {
 			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
 			this->respond(client, ERR_NOTREGISTERED((*it).command));
 		}
-		else if (i > 2 && client->getIsAuth() == false) {
+		else if (i > 3 && client->getIsAuth() == false) {
 			std::cout << RED"ERR_NOTREGISTERED"DEFAULT << std::endl;
 			this->respond(client, ERR_NOTREGISTERED((*it).command));
 		}
@@ -49,6 +49,11 @@ void Server::cmdPass(Client *client, Parser cmd) {
 		this->clients.erase(searchForClient(client));
 		client->setToBeDeleted(true);
 	}
+}
+
+void Server::cmdCap(Client *client, Parser cmd) {
+	if (cmd.params[0] == "LS")
+	return (this->respond(client, RPL_CAP()));
 }
 
 /**
@@ -343,6 +348,31 @@ void Server::cmdPriv(Client *client, Parser cmd) {
 	else{
 		clienttest->write(":" + client->getPrefix() + " " + RPL_PRIVMSG(cmd.params[0], cmd.trailing));
 	}
+}
+
+
+/**
+ * @brief Command: PRIVMSG
+ *
+ * Parameters: <target> :<message>
+ * 
+ * @param client Pointer to client
+ * @param cmd Parsed command line
+ */
+void Server::cmdNotice(Client *client, Parser cmd) {
+	if (cmd.params[0].empty() || cmd.params.size() != 1 || !cmd.hasTrailing || cmd.params[0].find(',') != std::string::npos)
+		return;
+
+	if (cmd.params[0][0] == '#'){
+		Channel *channel = this->getChannelByName(cmd.params[0]);
+		if (channel != NULL)
+			channel->writeInChan(client, RPL_NOTICE(cmd.params[0], cmd.trailing), false);
+		return;
+	}
+
+	Client *clienttest = this->getClientByNick(cmd.params[0]);
+	if (clienttest != NULL && clienttest->getIsAuth())
+		clienttest->write(":" + client->getPrefix() + " " + RPL_NOTICE(cmd.params[0], cmd.trailing));
 }
 
 void	Server::cmdMode(Client *client, Parser cmd)

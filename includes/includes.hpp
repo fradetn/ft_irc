@@ -70,11 +70,13 @@ class Channel;
 # define RPL_ENDOFNAMES(nickname, channel)			"366 " + nickname + " " + channel + " :End of /NAMES list"
 
 # define RPL_QUIT(nickname, reason)					":" + nickname + " QUIT :" + reason
+# define RPL_CAP()									"CAP * LS :"
 # define RPL_PART(channel, reason)					"PART " + channel + " " + reason
 # define RPL_KICK(channel, nickname, reason)		"KICK " + channel + " " + nickname +  " :" + reason
 # define RPL_JOIN(channel)							"JOIN :" + channel
 # define RPL_NICK(oldNick, newNick)					":" + oldNick + " NICK " + newNick
 # define RPL_PRIVMSG(target, message)				"PRIVMSG " + target + " :" + message
+# define RPL_NOTICE(target, message)				"NOTICE " + target + " :" + message
 # define RPL_MODE(target, message)					"MODE " + target + " " + message
 # define RPL_CHANNELMODEIS(nick, chan, mods)		"324 " + nick + " " + chan + " " + mods
 # define RPL_INVITING(nick, invited, chan)			"341 " + nick + " " + invited + " " + chan
@@ -97,7 +99,7 @@ class Channel;
 #endif
 
 #ifndef NB_CMD
-# define NB_CMD 11
+# define NB_CMD 13
 #endif
 
 typedef void (Server::*cmdFunc_t)(Client *, Parser);

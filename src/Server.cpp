@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/05 13:04:59 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/22 17:56:22 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/27 19:26:13 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,7 +135,7 @@ void Server::handleEvent(size_t &i) {
 		Client *client = this->clients[this->pollFds[i].fd];
 		char buffer[BUFFER_SIZE];
 		int byteRead = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
-		std::cout << GREEN"byteRead: '"DEFAULT << byteRead << GREEN"'"DEFAULT << std::endl;
+		// std::cout << GREEN"byteRead: '"DEFAULT << byteRead << GREEN"'"DEFAULT << std::endl;
 		
 		if (byteRead == -1)
 			throw std::runtime_error("Error: recv failed");
@@ -152,13 +152,11 @@ void Server::handleEvent(size_t &i) {
 
 		std::cout << GREEN"Message received from socket: "DEFAULT << this->pollFds[i].fd << std::endl;
 		std::cout << GREEN"Message: '"DEFAULT << buffer << GREEN"'"DEFAULT << std::endl;
-		std::cout << GREEN"Buffer: '"DEFAULT << client->getBuffer() << GREEN"'"DEFAULT << std::endl;
 		std::string message;
 		while (!client->getToBeDeleted() && (message = client->extractNextMessage()) != "") {
-			std::cout << GREEN"Message complet: '"DEFAULT << message << GREEN"'"DEFAULT << std::endl;
+			std::cout << GREEN"Message complet: '"DEFAULT << message << GREEN DEFAULT << std::endl;
 			this->parseMess(message);
 			this->handleCommands(client);
-			std::cout << client << std::endl;
 		}
 		if (client->getToBeDeleted())
 			this->disconectClient(client);

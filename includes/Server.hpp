@@ -6,7 +6,7 @@
 /*   By: nfradet <nfradet@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/06 14:37:11 by nfradet           #+#    #+#             */
-/*   Updated: 2025/01/22 17:52:56 by nfradet          ###   ########.fr       */
+/*   Updated: 2025/01/27 19:52:08 by nfradet          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ public:
 	//============//
 
 	void cmdPass(Client *client, Parser cmd);
+	void cmdCap(Client *client, Parser cmd);
 	void cmdNick(Client *client, Parser cmd);
 	void cmdUser(Client *client, Parser cmd);
 	void cmdQuit(Client *client, Parser cmd);
@@ -87,6 +88,7 @@ public:
 	void cmdPart(Client *client, Parser cmd);
 	void cmdTopic(Client *client, Parser cmd);
 	void cmdPriv(Client *client, Parser cmd);
+	void cmdNotice(Client *client, Parser cmd);
 	void cmdMode(Client *client, Parser cmd);
 	void cmdKick(Client *client, Parser cmd);
 	void cmdInvite(Client *client, Parser cmd);
